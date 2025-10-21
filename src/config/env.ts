@@ -6,3 +6,5 @@ export const config = {
   },
   corsOrigins: process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : ['http://localhost:5173']
 }
+
+export default config;
