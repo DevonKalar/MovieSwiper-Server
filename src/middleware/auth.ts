@@ -9,7 +9,7 @@ export const authRateLimiter = rateLimit({
     message: 'Too many login attempts, please try again later.'
 });
 
-const requireAuth = (req: Request, res: Response, next: NextFunction) => {
+export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
         return res.status(401).json({ message: 'Unauthorized' });
@@ -23,4 +23,3 @@ const requireAuth = (req: Request, res: Response, next: NextFunction) => {
     });
 };
 
-export default requireAuth;

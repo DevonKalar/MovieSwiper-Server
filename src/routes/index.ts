@@ -1,9 +1,10 @@
 import { Router } from 'express';
 import authRouter from './auth.js';
+import { authRateLimiter } from '../middleware/auth.js';
 
-const appRouter = Router();
+const serverRouter = Router();
 
 // Add routes here
-appRouter.use('/auth', authRouter);
+serverRouter.use('/auth', authRateLimiter, authRouter);
 
-export default appRouter;
+export default serverRouter;
