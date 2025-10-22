@@ -12,7 +12,7 @@ const PORT = config.port;
 app.set('trust proxy', 1);
 
 app.use(cors({
-  origin: 'https://movieswiper.devonkalar.com',
+  origin: config.corsOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
