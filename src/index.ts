@@ -10,6 +10,7 @@ const app = express();
 const PORT = config.port;
 
 app.use(cors({origin: config.corsOrigins}));
+console.log('CORS Origins:', config.corsOrigins);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
