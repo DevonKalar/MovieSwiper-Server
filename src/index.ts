@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import cors from 'cors';
 import { config } from './config/env.js';
 import serverRouter from './routes/index.js';
 
@@ -7,6 +8,8 @@ dotenv.config();
 
 const app = express();
 const PORT = config.port;
+
+app.use(cors({origin: config.corsOrigins}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
