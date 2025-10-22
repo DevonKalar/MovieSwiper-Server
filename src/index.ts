@@ -9,6 +9,8 @@ dotenv.config();
 const app = express();
 const PORT = config.port;
 
+app.set('trust proxy', 1);
+
 app.use(cors({origin: config.corsOrigins}));
 console.log('CORS Origins:', config.corsOrigins);
 
