@@ -1,11 +1,17 @@
 import { Router } from 'express';
 import {tmdbService} from '../services/tmdb.js';
+import * as z from 'zod';
+import { validateReqParams } from '../middleware/validate.js';
 
 const tmdbRouter = Router();
 
-tmdbRouter.get('/details/:id', async (req, res) => {
+const movieDetailsSchema = z.object({
+    id: z.string().min(1),
+});
+
+tmdbRouter.get('/details/:id', validateReqParams(movieDetailsSchema), async (req, res) => {
     try {
-        const movieId = parseInt(req.params.id, 10);
+        const movieId = parseInt(req.params.id as string, 10);
         const movieDetails = await tmdbService.fetchMovieDetails(movieId);
         if (!movieDetails) {
             return res.status(404).json({ error: 'Movie not found' });
@@ -17,7 +23,12 @@ tmdbRouter.get('/details/:id', async (req, res) => {
     }
 });
 
-tmdbRouter.get('/movies', async (req, res) => {
+const movieSearchSchema = z.object({
+    query: z.string().min(2).max(100),
+    page: z.number().min(1).optional(),
+});
+
+tmdbRouter.get('/movies', validateReqParams(movieSearchSchema), async (req, res) => {
     try {
         const movies = await tmdbService.fetchMoviesByQuery(req);
         res.json(movies);

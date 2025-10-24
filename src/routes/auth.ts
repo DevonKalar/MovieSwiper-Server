@@ -4,14 +4,17 @@ import prisma from '../lib/prisma.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import * as z from 'zod';
+import { validateReqBody } from '../middleware/validate.js';
 
 const authRouter = Router();
 
-authRouter.post('/login', async (req: Request, res: Response) => {
+const loginSchema = z.object({
+    email: z.string().email(),
+    password: z.string().min(6),
+});
+
+authRouter.post('/login', validateReqBody(loginSchema), async (req: Request, res: Response) => {
     const { email, password } = req.body;
-    if (!email || !password) {
-        return res.status(400).json({ message: 'Email and password are required' });
-    }
     try {
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user) {
@@ -29,11 +32,13 @@ authRouter.post('/login', async (req: Request, res: Response) => {
     }
 });
 
-authRouter.post('/register', async (req: Request, res: Response) => {
+const registerSchema = z.object({
+    email: z.string().email(),
+    password: z.string().min(6),
+});
+
+authRouter.post('/register', validateReqBody(registerSchema), async (req: Request, res: Response) => {
     const { email, password } = req.body;
-    if (!email || !password) {
-        return res.status(400).json({ message: 'Email and password are required' });
-    }
     try {
         const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser) {
