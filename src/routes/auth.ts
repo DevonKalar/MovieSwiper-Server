@@ -3,6 +3,7 @@ import type { Request, Response } from 'express';
 import prisma from '../lib/prisma.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import * as z from 'zod';
 
 const authRouter = Router();
 
