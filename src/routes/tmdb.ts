@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {tmdbService} from '../services/tmdb.js';
 import * as z from 'zod';
 import { validateReqParams } from '../middleware/validate.js';
+import { validateReqQuery } from '../middleware/validate.js';
 
 const tmdbRouter = Router();
 
@@ -23,14 +24,18 @@ tmdbRouter.get('/details/:id', validateReqParams(movieDetailsSchema), async (req
     }
 });
 
-const movieSearchSchema = z.object({
-    query: z.string().min(2).max(100),
-    page: z.number().min(1).optional(),
+const movieQuerySchema = z.object({
+  include_adult: z.enum(['true', 'false']).default('false'),
+  include_video: z.enum(['true', 'false']).default('false'),
+  language: z.string().default('en-US'),
+  page: z.string().regex(/^\d+$/).default('1'),
+  sort_by: z.string().default('popularity.desc'),
+  with_genres: z.string().optional()
 });
 
-tmdbRouter.get('/movies', validateReqParams(movieSearchSchema), async (req, res) => {
+tmdbRouter.get('/movies', validateReqQuery(movieQuerySchema), async (req, res) => {
     try {
-        const movies = await tmdbService.fetchMoviesByQuery(req);
+        const movies = await tmdbService.fetchMoviesByQuery(req.query as any);
         res.json(movies);
     } catch (error) {
         console.error("Error fetching movies:", error);
@@ -48,4 +53,5 @@ tmdbRouter.get('/genres', async (req, res) => {
     }
 });
 
+export type movieQuerySchema = z.infer<typeof movieQuerySchema>;
 export default tmdbRouter;
