@@ -11,12 +11,12 @@ class OpenAIService {
 	}
 
 	async createResponse(input: string, instructions?: string, previous_response_id?: string) {
-		console.log('Creating response with input:', input, 'and previousResponseID:', previous_response_id);
+		console.log('Creating response with input:', input, 'and instructions:', instructions, 'and previousResponseID:', previous_response_id);
 		const response = await this.client.responses.create({
 			model: 'gpt-4o',
 			input,
-			instructions,
-			previous_response_id,
+			...(instructions && { instructions }),
+      ...(previous_response_id && { previous_response_id }),
 		});
 		return response;
 	}

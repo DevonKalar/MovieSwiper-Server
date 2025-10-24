@@ -1,4 +1,6 @@
 import type { Request } from 'express';
+import { type movieQuerySchema } from '../routes/tmdb.js';
+import * as z from 'zod';
 
 class TMDBService {
   private baseURL: string;
@@ -30,8 +32,21 @@ class TMDBService {
     }
   }
 
-  async fetchMoviesByQuery(req: Request) {
-    const queryString = req.url?.split('?')[1] || '';
+  async fetchMoviesByQuery(params: movieQuerySchema) {
+    const queryParams: Record<string, string> = {
+      include_adult: params.include_adult,
+      include_video: params.include_video,
+      language: params.language,
+      page: params.page,
+      sort_by: params.sort_by,
+    };
+
+    if (params.with_genres) {
+      queryParams.with_genres = params.with_genres;
+    }
+
+    const queryString = new URLSearchParams(queryParams).toString();
+
     const url = `${this.baseURL}discover/movie?${queryString}`;
     console.log("Fetching movies by query from:", url);
     try {
@@ -46,7 +61,7 @@ class TMDBService {
         throw new Error("Network response was not ok");
       }
       const data = await response.json();
-      console.log("Fetched movies:", data.results);
+      console.log("Fetched movies:", data.results.length);
       return data;
     } catch (error) {
       console.error("Fetch movies failed:", error);
@@ -69,7 +84,7 @@ class TMDBService {
         throw new Error("Network response was not ok");
       }
       const data = await response.json();
-      console.log("Fetched genres:", data.genres);
+      console.log("Fetched genres:", data.genres.length);
       return data.genres;
     } catch (error) {
       console.error("Fetch genres failed:", error);

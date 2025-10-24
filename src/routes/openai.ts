@@ -1,16 +1,21 @@
 import { Router } from 'express';
 import { openaiService } from '../services/openai.js';
+import * as z from 'zod';
+import { validateReqBody } from '../middleware/validate.js';
+import { validateReqParams } from '../middleware/validate.js';
 
 const openaiRouter = Router();
 
-openaiRouter.post('/response', async (req, res) => {
+const responseSchema = z.object({
+	input: z.string().min(2).max(1000),
+	instructions: z.string().min(2).max(1000).optional(),
+	previous_response_id: z.string().optional(),
+});
+
+openaiRouter.post('/response', validateReqBody(responseSchema), async (req, res) => {
 	const { input, instructions, previous_response_id } = req.body;
 
-  if (!input) {
-    return res.status(400).json({ error: 'Input is required' });
-  }
-
-	try {
+  try {
 		const response = await openaiService.createResponse(input, instructions, previous_response_id);
 		res.json(response);
 	} catch (error) {
@@ -19,10 +24,14 @@ openaiRouter.post('/response', async (req, res) => {
 	}
 });
 
-openaiRouter.get('/response/:id', async (req, res) => {
+const retrieveSchema = z.object({
+  id: z.string().min(1),
+});
+
+openaiRouter.get('/response/:id', validateReqParams(retrieveSchema), async (req, res) => {
 	const { id } = req.params;
 	try {
-		const response = await openaiService.retrieveResponse(id);
+		const response = await openaiService.retrieveResponse(id as string);
 		res.json(response);
 	} catch (error) {
 		console.error('Error retrieving OpenAI response:', error);
