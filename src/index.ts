@@ -3,11 +3,20 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import { config } from './config/env.js';
 import serverRouter from './routes/index.js';
+import { parseCookies } from './middleware/parseCookies.js';
 
 dotenv.config();
 
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+    console.error('Error: JWT_SECRET is not defined in environment variables.');
+    process.exit(1);
+}
+
 const app = express();
 const PORT = config.port;
+
+app.use(parseCookies);
 
 app.set('trust proxy', 1);
 
