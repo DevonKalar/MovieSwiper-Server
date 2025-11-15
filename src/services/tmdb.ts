@@ -1,4 +1,3 @@
-import type { Request } from 'express';
 import { type movieQuerySchema } from '../routes/tmdb.js';
 import * as z from 'zod';
 
@@ -13,7 +12,6 @@ class TMDBService {
 
   async fetchMovieDetails(movieId: number) {
     const url = `${this.baseURL}movie/${movieId}?language=en-US`;
-    console.log("Fetching movie details from:", url);
     try {
       const response = await fetch(url, {
         headers: {
@@ -48,7 +46,6 @@ class TMDBService {
     const queryString = new URLSearchParams(queryParams).toString();
 
     const url = `${this.baseURL}discover/movie?${queryString}`;
-    console.log("Fetching movies by query from:", url);
     try {
       const response = await fetch(url, {
         method: 'GET',
@@ -61,7 +58,6 @@ class TMDBService {
         throw new Error("Network response was not ok");
       }
       const data = await response.json();
-      console.log("Fetched movies:", data.results.length);
       return data;
     } catch (error) {
       console.error("Fetch movies failed:", error);
@@ -69,9 +65,51 @@ class TMDBService {
     }
   }
 
+  async fetchPopularMovies(page: number = 1) {
+    const url = `${this.baseURL}movie/popular?language=en-US&page=${page}`;
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          accept: 'application/json',
+          Authorization: `Bearer ${this.token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Fetch popular movies failed:", error);
+      return [];
+    }
+  }
+
+  async fetchMoviesByGenre(genreId: string, page: number = 1) {
+    console.log("Fetching movies for genre ID:", genreId, "page:", page);
+    const url = `${this.baseURL}discover/movie?with_genres=${genreId}&language=en-US&page=${page}`;
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          accept: 'application/json',
+          Authorization: `Bearer ${this.token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Fetch movies by genre failed:", error);
+      return [];
+    }
+  }
+
   async fetchGenres() {
     const url = `${this.baseURL}genre/movie/list?language=en-US`;
-    console.log("Fetching genres from:", url);
     try {
       const response = await fetch(url, {
         method: 'GET',
