@@ -6,6 +6,73 @@ import { validateReqQuery } from '../middleware/validate.js';
 
 const tmdbRouter = Router();
 
+// used to map TMDB genre IDs to names
+const GENRE_MAP: Record<number, string> = {
+  28: 'Action',
+  12: 'Adventure',
+  16: 'Animation',
+  35: 'Comedy',
+  80: 'Crime',
+  99: 'Documentary',
+  18: 'Drama',
+  10751: 'Family',
+  14: 'Fantasy',
+  36: 'History',
+  27: 'Horror',
+  10402: 'Music',
+  9648: 'Mystery',
+  10749: 'Romance',
+  878: 'Science Fiction',
+  10770: 'TV Movie',
+  53: 'Thriller',
+  10752: 'War',
+  37: 'Western'
+};
+
+const movieRecommendationSchema = z.object({
+  genres: z.string().optional(),
+  page: z.string().regex(/^\d+$/).default('1'),
+});
+
+tmdbRouter.get('/recommendations', validateReqQuery(movieRecommendationSchema), async (req, res) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const genresParam = req.query.genres as string | undefined;
+    const genres = genresParam?.split(',');
+
+    // if no genres provided, get popular movies
+    if (!genres || genres.length === 0) {
+      const movies = await tmdbService.fetchPopularMovies(page);
+      const moviesWithGenreNames = movies.results.map((movie: any) => {
+        const movieGenres = movie.genre_ids.map((gid: number) => GENRE_MAP[gid]);
+        return { ...movie, genre_names: movieGenres };
+      });
+      return res.json(moviesWithGenreNames);
+    }
+
+    // Map genre names in query to IDs before fetching by genre
+    const genreIds = genres?.map((genre: string) => {
+      for (const [id, name] of Object.entries(GENRE_MAP)) {
+        if (name.toLowerCase() === genre.toLowerCase()) {
+          return id;
+        }
+      }
+      return null;
+    }).filter((id: string | null) => id !== null).join(',');
+
+    // Fetch movies by genre
+    const movies = await tmdbService.fetchMoviesByGenre(genreIds as string, page);
+    const moviesWithGenreNames = movies.results.map((movie: any) => {
+      const movieGenres = movie.genre_ids.map((gid: number) => GENRE_MAP[gid]);
+      return { ...movie, genre_names: movieGenres };
+    });
+    res.json(moviesWithGenreNames);
+  } catch (error) {
+    console.error("Error fetching recommendations:", error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 const movieDetailsSchema = z.object({
     id: z.string().min(1),
 });

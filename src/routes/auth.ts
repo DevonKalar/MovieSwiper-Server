@@ -48,13 +48,6 @@ authRouter.post('/login', validateReqBody(loginSchema), async (req: Request, res
   }
 });
 
-const registerSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
-});
-
 authRouter.post('/logout', async (req: Request, res: Response) => {
   res.clearCookie('auth_token', {
     httpOnly: true,
@@ -64,12 +57,19 @@ authRouter.post('/logout', async (req: Request, res: Response) => {
     res.json({ message: 'Logged out successfully' });
 });
 
+const registerSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
+});
+
 authRouter.post('/register', validateReqBody(registerSchema), async (req: Request, res: Response) => {
     const { email, password, firstName, lastName } = req.body;
     try {
         const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser) {
-            return res.status(409).json({ message: 'User already exists' });
+            return res.status(409).json({ message: 'User with that email already exists' });
         }
         const hashedPassword = await bcrypt.hash(password, 12);
         const user = await prisma.user.create({
