@@ -1,5 +1,4 @@
 import { type movieQuerySchema } from '../routes/tmdb.js';
-import * as z from 'zod';
 
 class TMDBService {
   private baseURL: string;
