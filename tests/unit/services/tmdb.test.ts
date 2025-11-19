@@ -6,15 +6,94 @@ import { http, HttpResponse } from 'msw';
 describe('tmdbService', () => {
   describe('fetchMovieDetails', () => {
     it('should fetch movie details for a valid movie ID', async () => {
-      // Act
-      const result = await tmdbService.fetchMovieDetails(550);
-      // Assert
-      expect(result).toEqual({
-        id: 550,
+      // Arrange
+      const movieId = 550;
+      const movieData = {
+        id: movieId,
         title: 'Fight Club',
         overview: 'A ticking-time-bomb insomniac...',
         release_date: '1999-10-15',
-      });
+      };
+
+      // Act
+      const result = await tmdbService.fetchMovieDetails(movieId);
+
+      // Assert
+      expect(result).toEqual(movieData);
+    });
+
+    it('should return popular movies', async () => {
+      // Arrange
+      const popularMoviesData = {
+        page: 1,
+        results: [{ id: 1, title: 'Popular Movie' }],
+        total_pages: 1,
+        total_results: 1,
+      };
+
+      server.use(
+        http.get('https://api.themoviedb.org/3/movie/popular', () => {
+          return HttpResponse.json(popularMoviesData);
+        })
+      );
+
+      // Act
+      const result = await tmdbService.fetchPopularMovies();
+
+      // Assert
+      expect(result).toEqual(popularMoviesData);
+    });
+
+    it('Should fetch genres with ids and names', async () => {
+      // Arrange
+      const genreData = {
+        genres: [
+          { id: 28, name: 'Action' },
+          { id: 12, name: 'Adventure' },
+        ],
+      };
+
+      server.use(
+        http.get('https://api.themoviedb.org/3/genre/movie/list', () => {
+          return HttpResponse.json(genreData);
+        })
+      );
+
+      // Act
+      const response = await tmdbService.fetchGenres();
+
+      // Assert
+      expect(response).toEqual(genreData.genres);
+    });
+
+    it('should fetch movies by query parameters', async () => {
+      // Arrange
+      const query = {
+        include_adult: 'false',
+        include_video: 'false',
+        language: 'en-US',
+        page: '1',
+        sort_by: 'popularity.desc',
+      } as const;
+
+      const moviesByQueryData = {
+        page: 1,
+        results: [{ id: 2, title: 'Queried Movie' }],
+        total_pages: 1,
+        total_results: 1,
+      };
+
+      server.use(
+        http.get('https://api.themoviedb.org/3/discover/movie', () => {
+          return HttpResponse.json(moviesByQueryData);
+        })
+      );
+
+      // Act
+      const result = await tmdbService.fetchMoviesByQuery(query);
+
+      // Assert
+      expect(result).toEqual(moviesByQueryData);
     });
   });
 });
