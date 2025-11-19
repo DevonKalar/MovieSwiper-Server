@@ -37,6 +37,10 @@ export type AddToWatchlistResponse = {
   watchlistItem: Watchlist;
 };
 
+export type RemoveFromWatchlistResponse = {
+  message: string;
+};
+
 export type WatchlistErrorResponse = {
   message: string;
 };

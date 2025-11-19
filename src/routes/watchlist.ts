@@ -8,6 +8,9 @@ import {
   type WatchlistResponse,
   type AddToWatchlistResponse,
   type WatchlistErrorResponse,
+  removeFromWatchlistSchema,
+  type RemoveFromWatchlistParams,
+  type RemoveFromWatchlistResponse
 } from '../types/watchlist.js';
 
 /*
@@ -109,5 +112,43 @@ watchlistRouter.post('/', validateReqBody(addToWatchlistSchema), async (req, res
 );
 
 // delete route to remove a movie from user's watchlist
+
+watchlistRouter.delete('/:id', validateReqBody(removeFromWatchlistSchema), async (req, res) => {
+    if (!req.user?.Id) {
+      const errorResponse: WatchlistErrorResponse = { message: 'Unauthorized' };
+      return res.status(401).json(errorResponse);
+    }
+
+    const { id } = req.validatedParams as RemoveFromWatchlistParams;
+
+    try {
+      const watchlistEntry = await prisma.watchlist.findFirst({
+        where: {
+          userId: req.user.Id,
+          movieId: parseInt(id, 10),
+        },
+      });
+
+      if (!watchlistEntry) {
+        const notFoundResponse: WatchlistErrorResponse = {
+          message: 'Watchlist item not found',
+        };
+        return res.status(404).json(notFoundResponse);
+      }
+
+      await prisma.watchlist.delete({
+        where: { id: watchlistEntry.id },
+      });
+      const response : RemoveFromWatchlistResponse = { message: 'Movie removed from watchlist' };
+      res.status(204).send(response);
+    } catch (error) {
+      console.error('Error removing movie from watchlist:', error);
+      const errorResponse: WatchlistErrorResponse = {
+        message: 'Failed to remove movie from watchlist',
+      };
+      res.status(500).json(errorResponse);
+    }
+  }
+);
 
 export default watchlistRouter;
