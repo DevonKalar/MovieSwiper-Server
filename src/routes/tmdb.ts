@@ -3,74 +3,61 @@ import {tmdbService} from '../services/tmdb.js';
 import * as z from 'zod';
 import { validateReqParams } from '../middleware/validate.js';
 import { validateReqQuery } from '../middleware/validate.js';
+import prisma from '../lib/prisma.js';
+import { mapIdsToGenres, mapGenresToIdString } from '../helpers/genreMapping.js';
 
 const tmdbRouter = Router();
 
-// used to map TMDB genre IDs to names
-const GENRE_MAP: Record<number, string> = {
-  28: 'Action',
-  12: 'Adventure',
-  16: 'Animation',
-  35: 'Comedy',
-  80: 'Crime',
-  99: 'Documentary',
-  18: 'Drama',
-  10751: 'Family',
-  14: 'Fantasy',
-  36: 'History',
-  27: 'Horror',
-  10402: 'Music',
-  9648: 'Mystery',
-  10749: 'Romance',
-  878: 'Science Fiction',
-  10770: 'TV Movie',
-  53: 'Thriller',
-  10752: 'War',
-  37: 'Western'
-};
-
 const movieRecommendationSchema = z.object({
-  genres: z.string().optional(),
   page: z.string().regex(/^\d+$/).default('1'),
 });
 
 tmdbRouter.get('/recommendations', validateReqQuery(movieRecommendationSchema), async (req, res) => {
-  try {
-    const page = parseInt(req.query.page as string) || 1;
-    const genresParam = req.query.genres as string | undefined;
-    const genres = genresParam?.split(',');
+  const userId = req.user?.id;
+  if (!userId) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+  const startPage = parseInt(req.query.page as string) || 1;
+  const limit = 20; // TMDB default page size
 
-    // if no genres provided, get popular movies
-    if (!genres || genres.length === 0) {
-      const movies = await tmdbService.fetchPopularMovies(page);
-      const moviesWithGenreNames = movies.results.map((movie: any) => {
-        const movieGenres = movie.genre_ids.map((gid: number) => GENRE_MAP[gid]);
-        return { ...movie, genre_names: movieGenres };
-      });
-      return res.json(moviesWithGenreNames);
+  // 1. get user's watchlist IDs
+  const watchlistIds = await prisma.watchlist.findMany({
+    where: { userId },
+    select: { movieId: true }
+  }).then(entries => entries.map(entry => entry.movieId));
+
+  // 2. create a set from watchlist IDs for quick lookup
+  const watchlistIdSet = new Set<number>(watchlistIds);
+
+  // 3. Fetch recommendations and filter out watchlist movies
+  let results: any[] = [];
+  let currentPage = startPage;
+  const maxPages = startPage + 10; // Limit to checking 10 pages ahead to find enough movies
+  
+  while (results.length < limit && currentPage < maxPages) {
+    // Call TMDB to get popular movies for current page
+    const movies = await tmdbService.fetchPopularMovies(currentPage);
+
+    if (!movies || !movies.results) {
+      break;
     }
 
-    // Map genre names in query to IDs before fetching by genre
-    const genreIds = genres?.map((genre: string) => {
-      for (const [id, name] of Object.entries(GENRE_MAP)) {
-        if (name.toLowerCase() === genre.toLowerCase()) {
-          return id;
-        }
-      }
-      return null;
-    }).filter((id: string | null) => id !== null).join(',');
-
-    // Fetch movies by genre
-    const movies = await tmdbService.fetchMoviesByGenre(genreIds as string, page);
-    const moviesWithGenreNames = movies.results.map((movie: any) => {
-      const movieGenres = movie.genre_ids.map((gid: number) => GENRE_MAP[gid]);
-      return { ...movie, genre_names: movieGenres };
-    });
-    res.json(moviesWithGenreNames);
-  } catch (error) {
-    console.error("Error fetching recommendations:", error);
-    res.status(500).json({ error: 'Internal server error' });
+    // filter out movies in user's watchlist
+    const filtered = movies.results.filter((movie: any) => !watchlistIdSet.has(movie.id));
+    results = results.concat(filtered);
+    currentPage += 1;
   }
+  
+  // 4. Add genre names to results and return
+  const resultsWithGenres = results.slice(0, limit).map((movie: any) => ({
+    ...movie,
+    genre_names: mapIdsToGenres(movie.genre_ids || [])
+  }));
+
+  res.json({
+    results: resultsWithGenres,
+    nextPage: results.length >= limit ? currentPage : null
+  });
 });
 
 const movieDetailsSchema = z.object({

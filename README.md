@@ -158,10 +158,10 @@ Movie database integration endpoints for fetching movie data, search, and metada
 ### Available Scripts
 
 ```bash
-npm run dev      # Start development server with hot reload
-npm run build    # Build for production
-npm start        # Start production server
-npm run postinstall # Generate Prisma client
+npm run dev           # Start development server with hot reload
+npm run build         # Build for production
+npm start             # Start production server
+npm run postinstall   # Generate Prisma client
 ```
 
 ### Database Operations

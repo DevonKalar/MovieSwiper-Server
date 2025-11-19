@@ -27,7 +27,7 @@ authRouter.post('/login', validateReqBody(loginSchema), async (req: Request, res
         return res.status(401).json({ message: 'Invalid email or password' });
     }
     // Generate JWT token
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, { expiresIn: '1d' });
+    const token = jwt.sign({ Id: user.id }, process.env.JWT_SECRET!, { expiresIn: '1d' });
     // set httpOnly cookie
     res.cookie('auth_token', token, {
       httpOnly: true,
@@ -80,7 +80,7 @@ authRouter.post('/register', validateReqBody(registerSchema), async (req: Reques
                 password: hashedPassword
             }
         });
-        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, { expiresIn: '1d' });
+        const token = jwt.sign({ Id: user.id }, process.env.JWT_SECRET!, { expiresIn: '1d' });
         
         // Set httpOnly cookie (same as login)
         res.cookie('auth_token', token, {

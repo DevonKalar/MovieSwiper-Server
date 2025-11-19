@@ -9,52 +9,38 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  firstName String
-  lastName  String
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  preferences     UserPreferences?
-  recommendations UserRecommendations[]
-}
-
-model UserPreferences {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @unique
-  genres    String[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  user User @relation(fields: [userId], references: [id])
-}
-
-model UserRecommendations {
-  id              Int      @id @default(autoincrement())
-  userId          Int      @unique
-  movieId         Int      @unique
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  // Relations
-  user User @relation(fields: [userId], references: [id])
-  movie Movies @relation(fields: [movieId], references: [id])
-
-  @@unique([userId, movieId])
+  id              Int           @id @default(autoincrement())
+  email           String        @unique
+  firstName       String
+  lastName        String
+  password        String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  watchlistItems  Watchlist[]
 }
 
 model Movies {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String
-  releaseDate DateTime
-  posterUrl   String
-  genres      String[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  recommendations UserRecommendations[]
+  id              Int           @id @default(autoincrement())
+  tmdbId          Int           @unique
+  title           String
+  description     String
+  releaseDate     DateTime
+  posterUrl       String
+  genres          String[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  watchlistedBy   Watchlist[]
+}
+
+model Watchlist {
+  id        Int           @id @default(autoincrement())
+  userId    Int
+  movieId   Int
+  createdAt DateTime      @default(now())
+
+  // Relations
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie Movies @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, movieId])
 }

@@ -10,16 +10,23 @@ export const authRateLimiter = rateLimit({
 });
 
 export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
-    const token = req.headers.authorization?.split(' ')[1];
+  
+    // Check for token in Authorization header OR cookies
+    const token = req.headers.authorization?.split(' ')[1] || req.cookies?.auth_token;
+    
     if (!token) {
-        return res.status(401).json({ message: 'Unauthorized' });
+        console.log('No token found in header or cookies');
+        return res.status(401).json({ message: 'Unauthorized - No token' });
     }
-    jwt.verify(token, process.env.JWT_SECRET || '', (err, decoded) => {
-        if (err) {
-            return res.status(401).json({ message: 'Unauthorized' });
-        }
-        req.user = decoded as JwtPayload;
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as JwtPayload;
+        req.user = decoded;
+        console.log('Token verified, user:', decoded);
         next();
-    });
+    } catch (err) {
+        console.log('JWT verification failed:', err instanceof Error ? err.message : 'Unknown error');
+        return res.status(401).json({ message: 'Unauthorized - Invalid token' });
+    }
 };
 
