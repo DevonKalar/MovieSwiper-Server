@@ -86,7 +86,6 @@ class TMDBService {
   }
 
   async fetchMoviesByGenre(genreId: string, page: number = 1) {
-    console.log("Fetching movies for genre ID:", genreId, "page:", page);
     const url = `${this.baseURL}discover/movie?with_genres=${genreId}&language=en-US&page=${page}`;
     try {
       const response = await fetch(url, {
@@ -121,7 +120,6 @@ class TMDBService {
         throw new Error("Network response was not ok");
       }
       const data = await response.json();
-      console.log("Fetched genres:", data.genres.length);
       return data.genres;
     } catch (error) {
       console.error("Fetch genres failed:", error);

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { tmdbService } from '@services/tmdb.js';
 import { server } from '@tests/mocks/server.js';
 import { http, HttpResponse } from 'msw';
+import { tmdbService } from '@services/tmdb.js';
 
 describe('tmdbService', () => {
   describe('fetchMovieDetails', () => {
@@ -21,7 +21,9 @@ describe('tmdbService', () => {
       // Assert
       expect(result).toEqual(movieData);
     });
+  });
 
+  describe('fetchPopularMovies', () => {
     it('should return popular movies', async () => {
       // Arrange
       const popularMoviesData = {
@@ -43,7 +45,9 @@ describe('tmdbService', () => {
       // Assert
       expect(result).toEqual(popularMoviesData);
     });
+  });
 
+  describe('fetchGenres', () => {
     it('Should fetch genres with ids and names', async () => {
       // Arrange
       const genreData = {
@@ -65,7 +69,9 @@ describe('tmdbService', () => {
       // Assert
       expect(response).toEqual(genreData.genres);
     });
+  });
 
+  describe('fetchMoviesByQuery', () => {
     it('should fetch movies by query parameters', async () => {
       // Arrange
       const query = {

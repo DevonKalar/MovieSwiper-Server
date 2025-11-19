@@ -27,7 +27,6 @@ export const validateReqQuery = <T extends z.ZodRawShape>(
       req.validatedQuery = await schema.parseAsync(req.query);
       next();
     } catch (error) {
-      console.log('Validation error:', error);
       if (error instanceof z.ZodError) {
         return res
           .status(400)
