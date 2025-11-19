@@ -5,6 +5,9 @@ declare global {
     interface Request {
       user?: JwtPayload;
       cookies?: Record<string, string>;
+      validatedParams?: Record<string, any>;
+      validatedBody?: Record<string, any>;
+      validatedQuery?: Record<string, any>;
     }
   }
 }

@@ -1,4 +1,13 @@
-export const config = {
+interface config {
+  port: number | string;
+  apiKeys: {
+    openai: string;
+    tmdb: string;
+  };
+  corsOrigins: string[];
+}
+
+export const config: config = {
   port: process.env.PORT || 3000,
   apiKeys: {
     openai: process.env.OPENAI_API_KEY || '',

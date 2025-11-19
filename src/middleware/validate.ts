@@ -1,43 +1,55 @@
-import { ZodError, ZodObject } from 'zod';
 import type { Request, Response, NextFunction } from 'express';
+import * as z from 'zod';
 
-export const validateReqBody = (schema: ZodObject<any>) => {
+export const validateReqBody = <T extends z.ZodRawShape>(
+  schema: z.ZodObject<T>
+) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-        req.body = await schema.parseAsync(req.body);
-        next();
+      req.validatedBody = await schema.parseAsync(req.body);
+      next();
     } catch (error) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({ message: 'Invalid request body', errors: error.issues });
+      if (error instanceof z.ZodError) {
+        return res
+          .status(400)
+          .json({ message: 'Invalid request body', errors: error.issues });
       }
       next(error);
     }
   };
 };
 
-export const validateReqQuery = (schema: ZodObject<any>) => {
-  return async (req: Request, res: Response, next: NextFunction) => { 
+export const validateReqQuery = <T extends z.ZodRawShape>(
+  schema: z.ZodObject<T>
+) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      await schema.parseAsync(req.query);
+      req.validatedQuery = await schema.parseAsync(req.query);
       next();
     } catch (error) {
-        console.log("Validation error:", error);
-        if (error instanceof ZodError) {
-          return res.status(400).json({ message: 'Invalid request query', errors: error.issues });
-        }
-        next(error);
+      console.log('Validation error:', error);
+      if (error instanceof z.ZodError) {
+        return res
+          .status(400)
+          .json({ message: 'Invalid request query', errors: error.issues });
+      }
+      next(error);
     }
   };
 };
 
-export const validateReqParams = (schema: ZodObject<any>) => {
+export const validateReqParams = <T extends z.ZodRawShape>(
+  schema: z.ZodObject<T>
+) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      req.params = await schema.parseAsync(req.params) as any;
+      req.validatedParams = await schema.parseAsync(req.params);
       next();
     } catch (error) {
-      if (error instanceof ZodError) {
-          return res.status(400).json({ message: 'Invalid request params', errors: error.issues });
+      if (error instanceof z.ZodError) {
+        return res
+          .status(400)
+          .json({ message: 'Invalid request params', errors: error.issues });
       }
       next(error);
     }

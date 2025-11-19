@@ -46,7 +46,7 @@ export const optionalAuth = (req: Request, res: Response, next: NextFunction) =>
         next();
     } catch (err) {
         // Invalid token is also fine, just continue without setting req.user
-        console.log('Optional auth - JWT verification failed, continuing anyway');
+        console.log('Optional auth - JWT verification failed, continuing anyway', err instanceof Error ? err.message : 'Unknown error');
         next();
     }
 };

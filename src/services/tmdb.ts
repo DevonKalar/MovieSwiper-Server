@@ -1,4 +1,4 @@
-import { type movieQuerySchema } from '../routes/tmdb.js';
+import { type MovieQuery } from '../types/tmdb.js';
 
 class TMDBService {
   private baseURL: string;
@@ -29,7 +29,7 @@ class TMDBService {
     }
   }
 
-  async fetchMoviesByQuery(params: movieQuerySchema) {
+  async fetchMoviesByQuery(params: MovieQuery) {
     const queryParams: Record<string, string> = {
       include_adult: params.include_adult,
       include_video: params.include_video,
