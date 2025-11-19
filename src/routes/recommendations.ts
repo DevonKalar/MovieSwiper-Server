@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { tmdbService } from '../services/tmdb.js';
 import { validateReqQuery } from '../middleware/validate.js';
 import prisma from '../lib/prisma.js';
-import { mapIdsToGenres } from '../helpers/genreMapping.js';
+import { mapIdsToGenres } from '../utils/genreMapping.js';
 import { type TMDBMovie, type TMDBMovieWithGenres } from '../types/movie.js';
 import {
   movieRecommendationSchema,
