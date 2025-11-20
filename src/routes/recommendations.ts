@@ -18,7 +18,7 @@ import {
 const recommendationsRouter = Router();
 
 recommendationsRouter.get('/', validateReqQuery(movieRecommendationSchema), async (req, res) => {
-    const userId = req.user?.id;
+  const userId = req.user?.id;
     if (!userId) {
       // if user not logged in fetch popular movies without filtering
       try {
@@ -28,7 +28,7 @@ recommendationsRouter.get('/', validateReqQuery(movieRecommendationSchema), asyn
         const resultsWithGenres = popularMovies.results.map(
           (movie: TMDBMovie) => ({
             ...movie,
-            genre_names: mapIdsToGenres(movie.genre_ids || []),
+            genre_names: mapIdsToGenres(movie.genre_ids || []), // TODO: move mapping to service layer
           })
         );
 
@@ -74,14 +74,12 @@ recommendationsRouter.get('/', validateReqQuery(movieRecommendationSchema), asyn
       const maxPages = startPage + 10; // Limit to checking 10 pages ahead to find enough movies
 
       while (results.length < limit && currentPage < maxPages) {
-        // Call TMDB to get popular movies for current page
         const movies = await tmdbService.fetchPopularMovies(currentPage);
 
         if (!movies || !movies.results) {
           break;
         }
 
-        // filter out movies in user's watchlist
         const filtered = movies.results.filter(
           (movie: TMDBMovie) => !watchlistIdSet.has(movie.id)
         );
@@ -89,12 +87,12 @@ recommendationsRouter.get('/', validateReqQuery(movieRecommendationSchema), asyn
         currentPage += 1;
       }
 
-      // 4. Add genre names to results and return TODO: Look into moving mapping logic to service layer
+      // 4. Add genre names to results and return
       const resultsWithGenres: TMDBMovieWithGenres[] = results
         .slice(0, limit)
         .map((movie: TMDBMovie) => ({
           ...movie,
-          genre_names: mapIdsToGenres(movie.genre_ids || []),
+          genre_names: mapIdsToGenres(movie.genre_ids || []), // TODO: move mapping to service layer
         }));
 
       const response: RecommendationResponse = {
