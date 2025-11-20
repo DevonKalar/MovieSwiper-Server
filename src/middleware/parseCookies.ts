@@ -17,10 +17,11 @@ const parseCookieString = (cookieHeader: string | undefined): Record<string, str
 }
 
 // Middleware function to parse cookies from request headers
-export const parseCookies = (req: Request, res: Response, next: NextFunction): void => {
+const parseCookies = (req: Request, res: Response, next: NextFunction): void => {
   const cookieHeader = req.headers.cookie;
   req.cookies = parseCookieString(cookieHeader);
   next();
 }
 
 export { parseCookieString };
+export default parseCookies;

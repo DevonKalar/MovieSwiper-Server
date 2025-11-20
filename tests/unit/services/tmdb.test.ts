@@ -2,8 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { server } from '@tests/mocks/server.js';
 import { http, HttpResponse } from 'msw';
 import { tmdbService } from '@services/tmdb.js';
+import { setupMSW } from '@tests/utils/setupMSW.js';
 
 describe('tmdbService', () => {
+  setupMSW();
   describe('fetchMovieDetails', () => {
     it('should fetch movie details for a valid movie ID', async () => {
       // Arrange

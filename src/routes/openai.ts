@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { openaiService } from '../services/openai.js';
-import { validateReqBody, validateReqParams } from '../middleware/validate.js';
+import { openaiService } from '@services/openai.js';
+import { validateReqBody, validateReqParams } from '@middleware/validate.js';
 import {
   responseSchema,
   retrieveSchema,
@@ -8,7 +8,7 @@ import {
   type RetrieveParams,
   type OpenAIResponse,
   type OpenAIErrorResponse,
-} from '../types/openai.js';
+} from '@/types/openai.js';
 
 /*
  * OpenAI routes for creating and retrieving AI-generated responses.

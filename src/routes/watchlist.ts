@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import prisma from '../lib/prisma.js';
 import { Prisma } from '@prisma/client';
-import { validateReqBody } from '../middleware/validate.js';
+import { validateReqBody, validateReqParams } from '../middleware/validate.js';
 import {
   addToWatchlistSchema,
   type AddToWatchlistInput,
@@ -10,7 +10,7 @@ import {
   type WatchlistErrorResponse,
   removeFromWatchlistSchema,
   type RemoveFromWatchlistParams,
-  type RemoveFromWatchlistResponse
+  type RemoveFromWatchlistResponse,
 } from '../types/watchlist.js';
 
 /*
@@ -67,8 +67,8 @@ watchlistRouter.post('/', validateReqBody(addToWatchlistSchema), async (req, res
             genres: movie.genres,
           },
           create: {
-            tmdbId: movie.id,
             title: movie.title,
+            tmdbId: movie.id,
             description: movie.description,
             releaseDate: new Date(movie.releaseDate),
             posterUrl: movie.poster,
@@ -113,7 +113,7 @@ watchlistRouter.post('/', validateReqBody(addToWatchlistSchema), async (req, res
 
 // delete route to remove a movie from user's watchlist
 
-watchlistRouter.delete('/:id', validateReqBody(removeFromWatchlistSchema), async (req, res) => {
+watchlistRouter.delete('/:id', validateReqParams(removeFromWatchlistSchema), async (req, res) => {
     if (!req.user?.Id) {
       const errorResponse: WatchlistErrorResponse = { message: 'Unauthorized' };
       return res.status(401).json(errorResponse);
@@ -125,7 +125,7 @@ watchlistRouter.delete('/:id', validateReqBody(removeFromWatchlistSchema), async
       const watchlistEntry = await prisma.watchlist.findFirst({
         where: {
           userId: req.user.Id,
-          movieId: parseInt(id, 10),
+          movieId: parseInt(id),
         },
       });
 
@@ -139,7 +139,9 @@ watchlistRouter.delete('/:id', validateReqBody(removeFromWatchlistSchema), async
       await prisma.watchlist.delete({
         where: { id: watchlistEntry.id },
       });
-      const response : RemoveFromWatchlistResponse = { message: 'Movie removed from watchlist' };
+      const response: RemoveFromWatchlistResponse = {
+        message: 'Movie removed from watchlist',
+      };
       res.status(204).send(response);
     } catch (error) {
       console.error('Error removing movie from watchlist:', error);

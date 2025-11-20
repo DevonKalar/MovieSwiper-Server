@@ -15,17 +15,14 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction) => 
     const token = req.headers.authorization?.split(' ')[1] || req.cookies?.auth_token;
     
     if (!token) {
-        console.log('No token found in header or cookies');
         return res.status(401).json({ message: 'Unauthorized - No token' });
     }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as JwtPayload;
         req.user = decoded;
-        console.log('Token verified, user:', decoded);
         next();
     } catch (err) {
-        console.log('JWT verification failed:', err instanceof Error ? err.message : 'Unknown error');
         return res.status(401).json({ message: 'Unauthorized - Invalid token' });
     }
 };
@@ -35,18 +32,16 @@ export const optionalAuth = (req: Request, res: Response, next: NextFunction) =>
     const token = req.headers.authorization?.split(' ')[1] || req.cookies?.auth_token;
     
     if (!token) {
-        // No token is fine, just continue without setting req.user
+        // No token is fine, continue without setting req.user
         return next();
     }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as JwtPayload;
         req.user = decoded;
-        console.log('Optional auth - Token verified, user:', decoded);
         next();
     } catch (err) {
-        // Invalid token is also fine, just continue without setting req.user
-        console.log('Optional auth - JWT verification failed, continuing anyway', err instanceof Error ? err.message : 'Unknown error');
+        // Invalid token is also fine, continue without setting req.user
         next();
     }
 };
