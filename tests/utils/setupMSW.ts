@@ -20,7 +20,7 @@ import { server } from '../mocks/server.js';
  */
 export function setupMSW() {
   beforeAll(() => {
-    server.listen({ onUnhandledRequest: 'warn' });
+    server.listen({ onUnhandledRequest: 'error' });
   });
 
   afterEach(() => {
