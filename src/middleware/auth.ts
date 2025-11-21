@@ -10,16 +10,38 @@ export const authRateLimiter = rateLimit({
 });
 
 export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
-    const token = req.headers.authorization?.split(' ')[1];
+  
+    // Check for token in Authorization header OR cookies
+    const token = req.headers.authorization?.split(' ')[1] || req.cookies?.auth_token;
+    
     if (!token) {
-        return res.status(401).json({ message: 'Unauthorized' });
+        return res.status(401).json({ message: 'Unauthorized - No token' });
     }
-    jwt.verify(token, process.env.JWT_SECRET || '', (err, decoded) => {
-        if (err) {
-            return res.status(401).json({ message: 'Unauthorized' });
-        }
-        req.user = decoded as JwtPayload;
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as JwtPayload;
+        req.user = decoded;
         next();
-    });
+    } catch (err) {
+        return res.status(401).json({ message: 'Unauthorized - Invalid token' });
+    }
 };
 
+export const optionalAuth = (req: Request, res: Response, next: NextFunction) => {
+    // Check for token in Authorization header OR cookies
+    const token = req.headers.authorization?.split(' ')[1] || req.cookies?.auth_token;
+    
+    if (!token) {
+        // No token is fine, continue without setting req.user
+        return next();
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as JwtPayload;
+        req.user = decoded;
+        next();
+    } catch (err) {
+        // Invalid token is also fine, continue without setting req.user
+        next();
+    }
+};

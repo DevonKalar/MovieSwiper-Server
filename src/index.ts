@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import { config } from './config/env.js';
 import serverRouter from './routes/index.js';
-import { parseCookies } from './middleware/parseCookies.js';
+import cookieParser from 'cookie-parser';
 
 dotenv.config();
 
@@ -16,7 +16,7 @@ if (!JWT_SECRET) {
 const app = express();
 const PORT = config.port;
 
-app.use(parseCookies);
+app.use(cookieParser());
 
 app.set('trust proxy', 1);
 

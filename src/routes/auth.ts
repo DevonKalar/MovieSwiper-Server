@@ -3,18 +3,17 @@ import type { Request, Response } from 'express';
 import prisma from '../lib/prisma.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import * as z from 'zod';
 import { validateReqBody } from '../middleware/validate.js';
+import  { type LoginInput, loginSchema, type RegisterInput, registerSchema, type LoginResponse, type RegisterResponse, type LogoutResponse } from '../types/auth.js';
+
+/**
+ * Authentication routes for user login, registration, and logout.
+ */
 
 const authRouter = Router();
 
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-});
-
 authRouter.post('/login', validateReqBody(loginSchema), async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  const { email, password } = req.validatedBody as LoginInput;
   try {
     // Find user by email
     const user = await prisma.user.findUnique({ where: { email } });
@@ -27,7 +26,7 @@ authRouter.post('/login', validateReqBody(loginSchema), async (req: Request, res
         return res.status(401).json({ message: 'Invalid email or password' });
     }
     // Generate JWT token
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, { expiresIn: '1d' });
+    const token = jwt.sign({ Id: user.id }, process.env.JWT_SECRET!, { expiresIn: '1d' });
     // set httpOnly cookie
     res.cookie('auth_token', token, {
       httpOnly: true,
@@ -35,13 +34,15 @@ authRouter.post('/login', validateReqBody(loginSchema), async (req: Request, res
       sameSite: 'strict',
       maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day - in milliseconds
     });
-    res.status(200).json({
+
+    const response: LoginResponse = {
       message: 'Login successful',
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
       id: user.id,
-    });
+    }
+    return res.status(200).json(response);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
@@ -49,58 +50,57 @@ authRouter.post('/login', validateReqBody(loginSchema), async (req: Request, res
 });
 
 authRouter.post('/logout', async (req: Request, res: Response) => {
-  res.clearCookie('auth_token', {
+  try {
+    res.clearCookie('auth_token', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
-  });
-    res.json({ message: 'Logged out successfully' });
-});
-
-const registerSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
+    });
+    const response: LogoutResponse = { message: 'Logged out successfully' };
+    return res.json(response);
+  } catch (error) {
+    console.error('Error during logout:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
 authRouter.post('/register', validateReqBody(registerSchema), async (req: Request, res: Response) => {
-    const { email, password, firstName, lastName } = req.body;
-    try {
-        const existingUser = await prisma.user.findUnique({ where: { email } });
-        if (existingUser) {
-            return res.status(409).json({ message: 'User with that email already exists' });
-        }
-        const hashedPassword = await bcrypt.hash(password, 12);
-        const user = await prisma.user.create({
-            data: {
-                email,
-                firstName,
-                lastName,
-                password: hashedPassword
-            }
-        });
-        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, { expiresIn: '1d' });
-        
-        // Set httpOnly cookie (same as login)
-        res.cookie('auth_token', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'strict',
-          maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day - in milliseconds
-        });
-        
-        res.status(201).json({ 
-          message: 'Registration successful',
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          id: user.id,
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+  const { email, password, firstName, lastName } = req.validatedBody as RegisterInput;
+  try {
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      return res.status(409).json({ message: 'User with that email already exists' });
     }
+    const hashedPassword = await bcrypt.hash(password, 12);
+    const user = await prisma.user.create({
+      data: {
+        email,
+        firstName,
+        lastName,
+        password: hashedPassword
+      }
+    });
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, { expiresIn: '1d' });
+    // Set httpOnly cookie (same as login)
+    res.cookie('auth_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day - in milliseconds
+    });
+    
+    const response: RegisterResponse = {
+      message: 'Registration successful',
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      id: user.id,
+    };
+    res.status(201).json(response);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
 export default authRouter;

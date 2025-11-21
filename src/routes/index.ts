@@ -1,10 +1,12 @@
 import { Router } from 'express';
-// Routes
+// Routers
 import authRouter from './auth.js';
 import openaiRouter from './openai.js';
 import tmdbRouter from './tmdb.js';
+import watchlistRouter from './watchlist.js';
+import recommendationsRouter from './recommendations.js';
 // Middleware
-import { authRateLimiter } from '../middleware/auth.js';
+import { authRateLimiter, requireAuth, optionalAuth } from '../middleware/auth.js';
 import { requestRateLimiter } from '../middleware/rateLimit.js';
 
 const serverRouter = Router();
@@ -13,5 +15,7 @@ const serverRouter = Router();
 serverRouter.use('/auth', authRateLimiter, authRouter);
 serverRouter.use('/openai', requestRateLimiter, openaiRouter);
 serverRouter.use('/tmdb', requestRateLimiter, tmdbRouter);
+serverRouter.use('/watchlist', requireAuth, requestRateLimiter, watchlistRouter);
+serverRouter.use('/recommendations', optionalAuth, requestRateLimiter, recommendationsRouter);
 
 export default serverRouter;
