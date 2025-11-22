@@ -27,6 +27,7 @@ model Movies {
   releaseDate     DateTime
   posterUrl       String
   genres          String[]
+  ratings         Float
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
   watchlistedBy   Watchlist[]

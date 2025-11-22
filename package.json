@@ -10,6 +10,7 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "vitest:coverage": "vitest run --coverage",
+    "prisma studio": "prisma studio --config ./prisma.config.ts",
     "dev": "tsup --watch --onSuccess \"node dist/index.js\"",
     "postinstall": "prisma generate",
     "start": "node dist/index.js"
@@ -19,7 +20,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "@prisma/client": "^6.17.1",
+    "@prisma/client": "^6.19.0",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -49,7 +50,7 @@
     "eslint": "^9.39.1",
     "msw": "^2.12.2",
     "prettier": "^3.6.2",
-    "prisma": "^6.17.1",
+    "prisma": "^6.19.0",
     "supertest": "^7.1.4",
     "tsup": "^8.5.0",
     "typescript": "^5.9.3",

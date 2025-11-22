@@ -34,6 +34,7 @@ watchlistRouter.get('/', async (req, res) => {
     });
 
     const response: WatchlistResponse = { watchlist: userWatchlist };
+    console.log('Watchlist response:', response);
     res.json(response);
   } catch (error) {
     console.error('Error fetching watchlist:', error);
@@ -63,16 +64,18 @@ watchlistRouter.post('/', validateReqBody(addToWatchlistSchema), async (req, res
             tmdbId: movie.id,
             description: movie.description,
             releaseDate: new Date(movie.releaseDate),
-            posterUrl: movie.poster,
+            posterUrl: movie.posterUrl,
             genres: movie.genres,
+            ratings: movie.rating,
           },
           create: {
             title: movie.title,
             tmdbId: movie.id,
             description: movie.description,
             releaseDate: new Date(movie.releaseDate),
-            posterUrl: movie.poster,
+            posterUrl: movie.posterUrl,
             genres: movie.genres,
+            ratings: movie.rating,
           },
         });
 

@@ -12,6 +12,12 @@ import  { type LoginInput, loginSchema, type RegisterInput, registerSchema, type
 
 const authRouter = Router();
 
+const COOKIE_OPTIONS: Record<string, any> = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax', // Allow in development
+};
+
 authRouter.post('/login', validateReqBody(loginSchema), async (req: Request, res: Response) => {
   const { email, password } = req.validatedBody as LoginInput;
   try {
@@ -29,9 +35,7 @@ authRouter.post('/login', validateReqBody(loginSchema), async (req: Request, res
     const token = jwt.sign({ Id: user.id }, process.env.JWT_SECRET!, { expiresIn: '1d' });
     // set httpOnly cookie
     res.cookie('auth_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      ...COOKIE_OPTIONS,
       maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day - in milliseconds
     });
 
@@ -51,11 +55,7 @@ authRouter.post('/login', validateReqBody(loginSchema), async (req: Request, res
 
 authRouter.post('/logout', async (req: Request, res: Response) => {
   try {
-    res.clearCookie('auth_token', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    });
+    res.clearCookie('auth_token', { ...COOKIE_OPTIONS });
     const response: LogoutResponse = { message: 'Logged out successfully' };
     return res.json(response);
   } catch (error) {
@@ -83,9 +83,7 @@ authRouter.post('/register', validateReqBody(registerSchema), async (req: Reques
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, { expiresIn: '1d' });
     // Set httpOnly cookie (same as login)
     res.cookie('auth_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      ...COOKIE_OPTIONS,
       maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day - in milliseconds
     });
     

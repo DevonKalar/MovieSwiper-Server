@@ -8,8 +8,9 @@ export const addToWatchlistSchema = z.object({
     title: z.string(),
     description: z.string(),
     releaseDate: z.string(),
-    poster: z.string(),
+    posterUrl: z.string(),
     genres: z.array(z.string()),
+    rating: z.number(),
   }),
 });
 
