@@ -5,6 +5,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { validateReqBody } from '../middleware/validate.js';
 import  { type LoginInput, loginSchema, type RegisterInput, registerSchema, type LoginResponse, type RegisterResponse, type LogoutResponse } from '../types/auth.js';
+import strict from 'assert/strict';
 
 /**
  * Authentication routes for user login, registration, and logout.
@@ -15,7 +16,8 @@ const authRouter = Router();
 const COOKIE_OPTIONS: Record<string, any> = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax', // Allow in development
+  sameSite: 'none',
+  strict: true,
 };
 
 authRouter.post('/login', validateReqBody(loginSchema), async (req: Request, res: Response) => {
