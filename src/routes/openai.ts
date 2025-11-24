@@ -6,7 +6,6 @@ import {
   retrieveSchema,
   type ResponseInput,
   type RetrieveParams,
-  type OpenAIResponse,
   type OpenAIErrorResponse,
 } from '@/types/openai.js';
 
