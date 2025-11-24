@@ -34,7 +34,6 @@ watchlistRouter.get('/', async (req, res) => {
     });
 
     const response: WatchlistResponse = { watchlist: userWatchlist };
-    console.log('Watchlist response:', response);
     res.json(response);
   } catch (error) {
     console.error('Error fetching watchlist:', error);
