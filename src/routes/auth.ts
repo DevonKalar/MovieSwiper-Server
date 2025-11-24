@@ -4,8 +4,15 @@ import prisma from '../lib/prisma.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { validateReqBody } from '../middleware/validate.js';
-import  { type LoginInput, loginSchema, type RegisterInput, registerSchema, type LoginResponse, type RegisterResponse, type LogoutResponse } from '../types/auth.js';
-import strict from 'assert/strict';
+import {
+  type LoginInput,
+  loginSchema,
+  type RegisterInput,
+  registerSchema,
+  type LoginResponse,
+  type RegisterResponse,
+  type LogoutResponse,
+} from '../types/auth.js';
 
 /**
  * Authentication routes for user login, registration, and logout.
@@ -16,44 +23,49 @@ const authRouter = Router();
 const COOKIE_OPTIONS: Record<string, any> = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: 'none',
-  strict: true,
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
 };
 
-authRouter.post('/login', validateReqBody(loginSchema), async (req: Request, res: Response) => {
-  const { email, password } = req.validatedBody as LoginInput;
-  try {
-    // Find user by email
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) {
+authRouter.post(
+  '/login',
+  validateReqBody(loginSchema),
+  async (req: Request, res: Response) => {
+    const { email, password } = req.validatedBody as LoginInput;
+    try {
+      // Find user by email
+      const user = await prisma.user.findUnique({ where: { email } });
+      if (!user) {
         return res.status(401).json({ message: 'Invalid email or password' });
-    }
-    // Compare password
-    const isValid = await bcrypt.compare(password, user.password);
-    if (!isValid) {
+      }
+      // Compare password
+      const isValid = await bcrypt.compare(password, user.password);
+      if (!isValid) {
         return res.status(401).json({ message: 'Invalid email or password' });
-    }
-    // Generate JWT token
-    const token = jwt.sign({ Id: user.id }, process.env.JWT_SECRET!, { expiresIn: '1d' });
-    // set httpOnly cookie
-    res.cookie('auth_token', token, {
-      ...COOKIE_OPTIONS,
-      maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day - in milliseconds
-    });
+      }
+      // Generate JWT token
+      const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
+        expiresIn: '1d',
+      });
+      // set httpOnly cookie
+      res.cookie('auth_token', token, {
+        ...COOKIE_OPTIONS,
+        maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day - in milliseconds
+      });
 
-    const response: LoginResponse = {
-      message: 'Login successful',
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      id: user.id,
+      const response: LoginResponse = {
+        message: 'Login successful',
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        id: user.id,
+      };
+      return res.status(200).json(response);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal server error' });
     }
-    return res.status(200).json(response);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
   }
-});
+);
 
 authRouter.post('/logout', async (req: Request, res: Response) => {
   try {
@@ -66,41 +78,50 @@ authRouter.post('/logout', async (req: Request, res: Response) => {
   }
 });
 
-authRouter.post('/register', validateReqBody(registerSchema), async (req: Request, res: Response) => {
-  const { email, password, firstName, lastName } = req.validatedBody as RegisterInput;
-  try {
-    const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser) {
-      return res.status(409).json({ message: 'User with that email already exists' });
-    }
-    const hashedPassword = await bcrypt.hash(password, 12);
-    const user = await prisma.user.create({
-      data: {
-        email,
-        firstName,
-        lastName,
-        password: hashedPassword
+authRouter.post(
+  '/register',
+  validateReqBody(registerSchema),
+  async (req: Request, res: Response) => {
+    const { email, password, firstName, lastName } =
+      req.validatedBody as RegisterInput;
+    try {
+      const existingUser = await prisma.user.findUnique({ where: { email } });
+      if (existingUser) {
+        return res
+          .status(409)
+          .json({ message: 'User with that email already exists' });
       }
-    });
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, { expiresIn: '1d' });
-    // Set httpOnly cookie (same as login)
-    res.cookie('auth_token', token, {
-      ...COOKIE_OPTIONS,
-      maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day - in milliseconds
-    });
-    
-    const response: RegisterResponse = {
-      message: 'Registration successful',
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      id: user.id,
-    };
-    res.status(201).json(response);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+      const hashedPassword = await bcrypt.hash(password, 12);
+      const user = await prisma.user.create({
+        data: {
+          email,
+          firstName,
+          lastName,
+          password: hashedPassword,
+        },
+      });
+      const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
+        expiresIn: '1d',
+      });
+      // Set httpOnly cookie (same as login)
+      res.cookie('auth_token', token, {
+        ...COOKIE_OPTIONS,
+        maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day - in milliseconds
+      });
+
+      const response: RegisterResponse = {
+        message: 'Registration successful',
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        id: user.id,
+      };
+      res.status(201).json(response);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
   }
-});
+);
 
 export default authRouter;
