@@ -21,20 +21,19 @@ const watchlistRouter = Router();
 
 // get route to fetch user's watchlist
 watchlistRouter.get('/', async (req, res) => {
-  if (!req.user?.Id) {
+  if (!req.user?.id) {
     const errorResponse: WatchlistErrorResponse = { message: 'Unauthorized' };
     return res.status(401).json(errorResponse);
   }
 
   try {
     const userWatchlist = await prisma.watchlist.findMany({
-      where: { userId: req.user.Id },
+      where: { userId: req.user.id },
       include: { movie: true },
       orderBy: { createdAt: 'desc' },
     });
 
     const response: WatchlistResponse = { watchlist: userWatchlist };
-    console.log('Watchlist response:', response);
     res.json(response);
   } catch (error) {
     console.error('Error fetching watchlist:', error);
@@ -46,8 +45,11 @@ watchlistRouter.get('/', async (req, res) => {
 });
 
 // post route to add a movie to user's watchlist
-watchlistRouter.post('/', validateReqBody(addToWatchlistSchema), async (req, res) => {
-    if (!req.user?.Id) {
+watchlistRouter.post(
+  '/',
+  validateReqBody(addToWatchlistSchema),
+  async (req, res) => {
+    if (!req.user?.id) {
       const errorResponse: WatchlistErrorResponse = { message: 'Unauthorized' };
       return res.status(401).json(errorResponse);
     }
@@ -82,7 +84,7 @@ watchlistRouter.post('/', validateReqBody(addToWatchlistSchema), async (req, res
         // add entry to Watchlist table
         const watchlistEntry = await tx.watchlist.create({
           data: {
-            userId: req.user!.Id,
+            userId: req.user!.id,
             movieId: movieEntry.id,
           },
         });
@@ -116,8 +118,11 @@ watchlistRouter.post('/', validateReqBody(addToWatchlistSchema), async (req, res
 
 // delete route to remove a movie from user's watchlist
 
-watchlistRouter.delete('/:id', validateReqParams(removeFromWatchlistSchema), async (req, res) => {
-    if (!req.user?.Id) {
+watchlistRouter.delete(
+  '/:id',
+  validateReqParams(removeFromWatchlistSchema),
+  async (req, res) => {
+    if (!req.user?.id) {
       const errorResponse: WatchlistErrorResponse = { message: 'Unauthorized' };
       return res.status(401).json(errorResponse);
     }
@@ -127,7 +132,7 @@ watchlistRouter.delete('/:id', validateReqParams(removeFromWatchlistSchema), asy
     try {
       const watchlistEntry = await prisma.watchlist.findFirst({
         where: {
-          userId: req.user.Id,
+          userId: req.user.id,
           movieId: parseInt(id),
         },
       });

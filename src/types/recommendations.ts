@@ -1,5 +1,5 @@
 import * as z from 'zod';
-import type { TMDBMovie, TMDBMovieWithGenres } from './movie.js';
+import type { TMDBMovieWithGenres } from './movie.js';
 
 // Schemas
 export const movieRecommendationSchema = z.object({

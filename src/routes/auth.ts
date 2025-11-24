@@ -20,11 +20,16 @@ import {
 
 const authRouter = Router();
 
-const COOKIE_OPTIONS: Record<string, any> = {
+// true if in production environment
+const isProduction = process.env.NODE_ENV === 'production';
+
+const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-};
+  secure: isProduction, 
+  sameSite: isProduction ? ('none' as const) : ('lax' as const),
+  path: '/', 
+  maxAge: 24 * 60 * 60 * 1000, // 1 day in milliseconds
+} as const;
 
 authRouter.post(
   '/login',
@@ -47,10 +52,7 @@ authRouter.post(
         expiresIn: '1d',
       });
       // set httpOnly cookie
-      res.cookie('auth_token', token, {
-        ...COOKIE_OPTIONS,
-        maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day - in milliseconds
-      });
+      res.cookie('auth_token', token, COOKIE_OPTIONS);
 
       const response: LoginResponse = {
         message: 'Login successful',
@@ -69,7 +71,12 @@ authRouter.post(
 
 authRouter.post('/logout', async (req: Request, res: Response) => {
   try {
-    res.clearCookie('auth_token', { ...COOKIE_OPTIONS });
+    res.clearCookie('auth_token', {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
+      path: '/',
+    });
     const response: LogoutResponse = { message: 'Logged out successfully' };
     return res.json(response);
   } catch (error) {
@@ -104,10 +111,7 @@ authRouter.post(
         expiresIn: '1d',
       });
       // Set httpOnly cookie (same as login)
-      res.cookie('auth_token', token, {
-        ...COOKIE_OPTIONS,
-        maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day - in milliseconds
-      });
+      res.cookie('auth_token', token, COOKIE_OPTIONS);
 
       const response: RegisterResponse = {
         message: 'Registration successful',
