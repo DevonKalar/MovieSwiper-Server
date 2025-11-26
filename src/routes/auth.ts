@@ -3,7 +3,7 @@ import type { Request, Response } from 'express';
 import prisma from '../lib/prisma.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { validateReqBody } from '../middleware/validate.js';
+import { validateReqBody } from '@middleware/validate.js';
 import {
   type LoginInput,
   loginSchema,
@@ -12,7 +12,8 @@ import {
   type LoginResponse,
   type RegisterResponse,
   type LogoutResponse,
-} from '../types/auth.js';
+} from '@/types/auth.js';
+import { requireAuth } from '@middleware/auth.js';
 
 /**
  * Authentication routes for user login, registration, and logout.
@@ -127,5 +128,29 @@ authRouter.post(
     }
   }
 );
+
+authRouter.get('/check', requireAuth, async (req: Request, res: Response) => {
+  try {
+    // Find user by id from req.user set in requireAuth middleware
+    const user = await prisma.user.findUnique({
+      where: { id: req.user!.id}
+    })
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const response: LoginResponse = {
+      message: 'User is authenticated',
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      id: user.id,
+    };
+    return res.status(200).json(response);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 export default authRouter;
