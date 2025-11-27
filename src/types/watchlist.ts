@@ -4,13 +4,13 @@ import type { Watchlist, Movies } from '@prisma/client';
 // Schemas
 export const addToWatchlistSchema = z.object({
   movie: z.object({
-    id: z.number(),
+    tmdbId: z.number(),
     title: z.string(),
     description: z.string(),
     releaseDate: z.string(),
     posterUrl: z.string(),
     genres: z.array(z.string()),
-    rating: z.number(),
+    ratings: z.number(),
   }),
 });
 

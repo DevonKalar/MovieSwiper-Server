@@ -60,24 +60,24 @@ watchlistRouter.post(
       const result = await prisma.$transaction(async (tx) => {
         // upsert movie into Movies table
         const movieEntry = await tx.movies.upsert({
-          where: { tmdbId: movie.id },
+          where: { tmdbId: movie.tmdbId },
           update: {
             title: movie.title,
-            tmdbId: movie.id,
+            tmdbId: movie.tmdbId,
             description: movie.description,
             releaseDate: new Date(movie.releaseDate),
             posterUrl: movie.posterUrl,
             genres: movie.genres,
-            ratings: movie.rating,
+            ratings: movie.ratings,
           },
           create: {
             title: movie.title,
-            tmdbId: movie.id,
+            tmdbId: movie.tmdbId,
             description: movie.description,
             releaseDate: new Date(movie.releaseDate),
             posterUrl: movie.posterUrl,
             genres: movie.genres,
-            ratings: movie.rating,
+            ratings: movie.ratings,
           },
         });
 
