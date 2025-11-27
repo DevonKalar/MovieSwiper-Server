@@ -1,5 +1,5 @@
 import * as z from 'zod';
-import type { TMDBMovieWithGenres } from './movie.js';
+import type { Movie } from './movie.js';
 
 // Schemas
 export const movieRecommendationSchema = z.object({
@@ -11,7 +11,7 @@ export type RecommendationQuery = z.infer<typeof movieRecommendationSchema>;
 
 // Response types
 export type RecommendationResponse = {
-  results: TMDBMovieWithGenres[];
+  results: Movie[];
   nextPage: number | null;
 };
 

@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import prisma from '@/lib/prisma.js';
 import watchlistRouter from '@routes/watchlist.js';
 import { requireAuth } from '@middleware/auth.js';
+import type { Movie } from '@/types/movie.js';
 
 const app = express();
 app.use(express.json());
@@ -13,9 +14,23 @@ app.use(cookieParser());
 app.use('/api/watchlist', requireAuth, watchlistRouter);
 
 describe('Watchlist Integration Tests', () => {
-  let authToken: string;
+
   let userId: number;
   let movieId: number;
+  let authToken: string;
+
+  const testMovieData: {movie: Movie} = {
+    movie: {
+      tmdbId: 999999,
+      title: 'Test Movie',
+      description: 'A test movie',
+      releaseDate: '2024-01-01',
+      posterUrl: 'https://example.com/poster.jpg',
+      genres: ['Action', 'Drama'],
+      ratings: 8.5,
+    },
+  };
+
 
   beforeAll(async () => {
     // Create a test user
@@ -30,7 +45,7 @@ describe('Watchlist Integration Tests', () => {
     userId = testUser.id;
 
     // Generate auth token
-    authToken = jwt.sign({ Id: userId }, process.env.JWT_SECRET!);
+    authToken = jwt.sign({ id: testUser.id }, process.env.JWT_SECRET!);
 
     // Create a test movie
     const testMovie = await prisma.movies.create({
@@ -41,9 +56,13 @@ describe('Watchlist Integration Tests', () => {
         releaseDate: new Date('2024-01-01'),
         posterUrl: 'https://example.com/poster.jpg',
         genres: ['Action', 'Drama'],
+        ratings: 8.5,
       },
     });
     movieId = testMovie.id;
+
+    // Define reusable test movie data structures
+
   });
 
   afterAll(async () => {
@@ -100,22 +119,11 @@ describe('Watchlist Integration Tests', () => {
 
   describe('POST /watchlist', () => {
     it('should add a new movie to watchlist', async () => {
-      const movieData = {
-        movie: {
-          id: 888888,
-          title: 'New Movie',
-          description: 'A brand new movie',
-          releaseDate: '2024-06-01',
-          poster: 'https://example.com/new-poster.jpg',
-          genres: ['Comedy'],
-        },
-      };
-
       const response = await request(app)
         .post('/api/watchlist')
         .set('Cookie', [`auth_token=${authToken}`])
-        .send(movieData);
-
+        .send(testMovieData);
+        
       expect(response.status).toBe(201);
       expect(response.body).toHaveProperty(
         'message',
@@ -126,28 +134,17 @@ describe('Watchlist Integration Tests', () => {
     });
 
     it('should return 409 when adding duplicate movie', async () => {
-      const movieData = {
-        movie: {
-          id: 999999,
-          title: 'Test Movie',
-          description: 'A test movie',
-          releaseDate: '2024-01-01',
-          poster: 'https://example.com/poster.jpg',
-          genres: ['Action', 'Drama'],
-        },
-      };
-
       // Add movie first time
       await request(app)
         .post('/api/watchlist')
         .set('Cookie', [`auth_token=${authToken}`])
-        .send(movieData);
+        .send(testMovieData);
 
       // Try to add same movie again
       const response = await request(app)
         .post('/api/watchlist')
         .set('Cookie', [`auth_token=${authToken}`])
-        .send(movieData);
+        .send(testMovieData);
 
       expect(response.status).toBe(409);
       expect(response.body).toHaveProperty(
@@ -159,7 +156,7 @@ describe('Watchlist Integration Tests', () => {
     it('should return 400 for invalid movie data', async () => {
       const invalidData = {
         movie: {
-          id: 'invalid', // Should be number
+          tmdbId: 'invalid', // Should be number
           title: '',
         },
       };
@@ -174,20 +171,9 @@ describe('Watchlist Integration Tests', () => {
     });
 
     it('should return 401 for unauthenticated user', async () => {
-      const movieData = {
-        movie: {
-          id: 888888,
-          title: 'New Movie',
-          description: 'A brand new movie',
-          releaseDate: '2024-06-01',
-          poster: 'https://example.com/new-poster.jpg',
-          genres: ['Comedy'],
-        },
-      };
-
       const response = await request(app)
         .post('/api/watchlist')
-        .send(movieData);
+        .send(testMovieData);
 
       expect(response.status).toBe(401);
       expect(response.body).toMatchObject({

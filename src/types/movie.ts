@@ -8,6 +8,13 @@ export interface TMDBMovie {
   release_date: string;
 }
 
-export interface TMDBMovieWithGenres extends TMDBMovie {
-  genre_names: string[];
+export interface Movie {
+  id?: number;
+  tmdbId: number;
+  title: string;
+  genres: string[];
+  posterUrl: string | null;
+  description: string;
+  ratings: number;
+  releaseDate: string;
 }
