@@ -14,12 +14,17 @@ export const addToWatchlistSchema = z.object({
   }),
 });
 
+export const addBulkToWatchlistSchema = z.object({
+  movies: z.array(addToWatchlistSchema.shape.movie),
+});
+
 export const removeFromWatchlistSchema = z.object({
   id: z.string().min(1),
 });
 
 // Input types
 export type AddToWatchlistInput = z.infer<typeof addToWatchlistSchema>;
+export type AddBulkToWatchlistInput = z.infer<typeof addBulkToWatchlistSchema>;
 export type RemoveFromWatchlistParams = z.infer<
   typeof removeFromWatchlistSchema
 >;

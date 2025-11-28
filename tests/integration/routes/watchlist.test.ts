@@ -182,6 +182,43 @@ describe('Watchlist Integration Tests', () => {
     });
   });
 
+  describe('POST /watchlist/bulk', () => {
+    it('should add multiple movies to watchlist', async () => {
+      const bulkMoviesData = {
+        movies: [
+          {
+            tmdbId: 888888,
+            title: 'Bulk Movie 1',
+            description: 'First bulk movie',
+            releaseDate: '2024-02-01',
+            posterUrl: 'https://example.com/bulk1.jpg',
+            genres: ['Comedy'],
+            ratings: 7.5,
+          },
+          {
+            tmdbId: 777777,
+            title: 'Bulk Movie 2',
+            description: 'Second bulk movie',
+            releaseDate: '2024-03-01',
+            posterUrl: 'https://example.com/bulk2.jpg',
+            genres: ['Horror'],
+            ratings: 6.5,
+          },
+        ],
+      };
+
+      const response = await request(app)
+        .post('/api/watchlist/bulk')
+        .set('Cookie', [`auth_token=${authToken}`])
+        .send(bulkMoviesData);
+      expect(response.status).toBe(201);
+      expect(response.body).toHaveProperty(
+        'message',
+        expect.stringContaining('movies added to watchlist')
+      );
+    });
+  });
+
   describe('DELETE /watchlist/:id', () => {
     it('should remove a movie from watchlist', async () => {
       // Add movie to watchlist first

@@ -25,7 +25,7 @@ model Movies {
   title           String
   description     String
   releaseDate     DateTime
-  posterUrl       String
+  posterUrl       String?
   genres          String[]
   ratings         Float
   createdAt       DateTime      @default(now())
