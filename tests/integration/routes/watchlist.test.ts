@@ -21,7 +21,7 @@ describe('Watchlist Integration Tests', () => {
 
   const testMovieData: {movie: Movie} = {
     movie: {
-      tmdbId: 999999,
+      id: 999999,
       title: 'Test Movie',
       description: 'A test movie',
       releaseDate: '2024-01-01',
@@ -50,7 +50,7 @@ describe('Watchlist Integration Tests', () => {
     // Create a test movie
     const testMovie = await prisma.movies.create({
       data: {
-        tmdbId: 999999,
+        id: 999999,
         title: 'Test Movie',
         description: 'A test movie',
         releaseDate: new Date('2024-01-01'),
@@ -68,7 +68,7 @@ describe('Watchlist Integration Tests', () => {
   afterAll(async () => {
     // Clean up test data
     await prisma.watchlist.deleteMany({ where: { userId } });
-    await prisma.movies.deleteMany({ where: { tmdbId: 999999 } });
+    await prisma.movies.deleteMany({ where: { id: 999999 } });
     await prisma.user.deleteMany({
       where: { email: 'watchlist-test@example.com' },
     });
@@ -156,7 +156,7 @@ describe('Watchlist Integration Tests', () => {
     it('should return 400 for invalid movie data', async () => {
       const invalidData = {
         movie: {
-          tmdbId: 'invalid', // Should be number
+          id: 'invalid', // Should be number
           title: '',
         },
       };
@@ -187,7 +187,7 @@ describe('Watchlist Integration Tests', () => {
       const bulkMoviesData = {
         movies: [
           {
-            tmdbId: 888888,
+            id: 888888,
             title: 'Bulk Movie 1',
             description: 'First bulk movie',
             releaseDate: '2024-02-01',
@@ -196,7 +196,7 @@ describe('Watchlist Integration Tests', () => {
             ratings: 7.5,
           },
           {
-            tmdbId: 777777,
+            id: 777777,
             title: 'Bulk Movie 2',
             description: 'Second bulk movie',
             releaseDate: '2024-03-01',

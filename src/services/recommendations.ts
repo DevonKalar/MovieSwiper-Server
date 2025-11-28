@@ -1,7 +1,7 @@
 import type { RecommendationResponse } from '@/types/recommendations.js';
 import { tmdbService } from '@services/tmdb.js';
 import { apiMoviesToMovies } from '@utils/mapTMDBtoMovie.js';
-import type { TMDBMovie } from '@/types/movie.js';
+import type { Movie, TMDBMovie } from '@/types/movie.js';
 import prisma from '@/lib/prisma.js';
 
 export async function fetchGuestRecommendations(
@@ -22,7 +22,7 @@ export async function fetchUserRecommendations(
   startPage: number
 ): Promise<RecommendationResponse> {
   const limit = 20;
-
+  console.log(`Fetching recommendations for user ${userId} starting from page ${startPage}`);
   // 1. Get user's watchlist IDs
   const watchlistIds = await prisma.watchlist
     .findMany({
@@ -41,9 +41,9 @@ export async function fetchUserRecommendations(
   while (tmdbResults.length < limit && currentPage < maxPages) {
     const movies = await tmdbService.fetchPopularMovies(currentPage);
     if (!movies?.results) break;
-
+    console.log(`Fetched page ${currentPage} with ${movies.results.length} movies`);
     const filtered = movies.results.filter(
-      (movie: TMDBMovie) => !watchlistIdSet.has(movie.id)
+      (movie: Movie) => !watchlistIdSet.has(movie.id)
     );
     tmdbResults.push(...filtered);
     currentPage += 1;
@@ -51,7 +51,7 @@ export async function fetchUserRecommendations(
 
   // 3. Transform and return
   const movieResults = apiMoviesToMovies(tmdbResults.slice(0, limit));
-
+  console.log(`Returning ${movieResults.length} recommended movies`);
   return {
     results: movieResults,
     nextPage: movieResults.length >= limit ? currentPage : null,

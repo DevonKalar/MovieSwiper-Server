@@ -20,8 +20,7 @@ model User {
 }
 
 model Movies {
-  id              Int           @id @default(autoincrement())
-  tmdbId          Int           @unique
+  id              Int           @id // TMDB movie ID
   title           String
   description     String
   releaseDate     DateTime

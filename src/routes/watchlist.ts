@@ -59,10 +59,10 @@ watchlistRouter.post('/', validateReqBody(addToWatchlistSchema), async (req, res
       const result = await prisma.$transaction(async (tx) => {
         // upsert movie into Movies table
         const movieEntry = await tx.movies.upsert({
-          where: { tmdbId: movie.tmdbId },
+          where: { id: movie.id },
           update: {
             title: movie.title,
-            tmdbId: movie.tmdbId,
+            id: movie.id,
             description: movie.description,
             releaseDate: new Date(movie.releaseDate),
             posterUrl: movie.posterUrl,
@@ -71,7 +71,7 @@ watchlistRouter.post('/', validateReqBody(addToWatchlistSchema), async (req, res
           },
           create: {
             title: movie.title,
-            tmdbId: movie.tmdbId,
+            id: movie.id,
             description: movie.description,
             releaseDate: new Date(movie.releaseDate),
             posterUrl: movie.posterUrl,
@@ -126,7 +126,7 @@ watchlistRouter.post('/bulk', validateReqBody(addBulkToWatchlistSchema), async (
       const movieEntries = await Promise.all(
         moviesToAdd.map((movie) =>
           tx.movies.upsert({
-            where: { tmdbId: movie.tmdbId },
+            where: { id: movie.id },
             update: {
               title: movie.title,
               description: movie.description,
@@ -136,7 +136,7 @@ watchlistRouter.post('/bulk', validateReqBody(addBulkToWatchlistSchema), async (
               ratings: movie.ratings,
             },
             create: {
-              tmdbId: movie.tmdbId,
+              id: movie.id,
               title: movie.title,
               description: movie.description,
               releaseDate: new Date(movie.releaseDate),
