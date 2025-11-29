@@ -11,37 +11,35 @@ export const authRateLimiter = rateLimit({
 
 export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
   
-    // Check for token in Authorization header OR cookies
-    const token = req.headers.authorization?.split(' ')[1] || req.cookies?.auth_token;
-    
-    if (!token) {
-        return res.status(401).json({ message: 'Unauthorized - No token' });
-    }
+  // Check for token in Authorization header OR cookies
+  const token = req.headers.authorization?.split(' ')[1] || req.cookies?.auth_token;
+  
+  if (!token) {
+      return res.status(401).json({ message: 'Unauthorized - No token' });
+  }
 
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as JwtPayload;
-        req.user = decoded;
-        next();
-    } catch (err) {
-        return res.status(401).json({ message: 'Unauthorized - Invalid token' });
-    }
+  try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as JwtPayload;
+      req.user = decoded;
+      next();
+  } catch (err) {
+      return res.status(401).json({ message: 'Unauthorized - Invalid token' });
+  }
 };
 
 export const optionalAuth = (req: Request, res: Response, next: NextFunction) => {
-    // Check for token in Authorization header OR cookies
-    const token = req.headers.authorization?.split(' ')[1] || req.cookies?.auth_token;
-    
-    if (!token) {
-        // No token is fine, continue without setting req.user
-        return next();
-    }
+  const token = req.headers.authorization?.split(' ')[1] || req.cookies?.auth_token;
+  
+  if (!token) {
+      return next();
+  }
 
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as JwtPayload;
-        req.user = decoded;
-        next();
-    } catch (err) {
-        // Invalid token is also fine, continue without setting req.user
-        next();
+  try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as JwtPayload;
+      req.user = decoded;
+      next();
+  } catch (err) {
+      console.error('OptionalAuth - Token invalid');
+      next();
     }
 };

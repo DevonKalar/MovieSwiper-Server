@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import { validateReqBody, validateReqParams } from '../middleware/validate.js';
 import {
   addToWatchlistSchema,
+  addBulkToWatchlistSchema,
   type AddToWatchlistInput,
   type WatchlistResponse,
   type AddToWatchlistResponse,
@@ -12,6 +13,7 @@ import {
   type RemoveFromWatchlistParams,
   type RemoveFromWatchlistResponse,
 } from '../types/watchlist.js';
+import { type Movie } from '@/types/movie.js';
 
 /*
  * Watchlist routes for managing user's movie watchlist.
@@ -45,10 +47,7 @@ watchlistRouter.get('/', async (req, res) => {
 });
 
 // post route to add a movie to user's watchlist
-watchlistRouter.post(
-  '/',
-  validateReqBody(addToWatchlistSchema),
-  async (req, res) => {
+watchlistRouter.post('/', validateReqBody(addToWatchlistSchema), async (req, res) => {
     if (!req.user?.id) {
       const errorResponse: WatchlistErrorResponse = { message: 'Unauthorized' };
       return res.status(401).json(errorResponse);
@@ -60,10 +59,10 @@ watchlistRouter.post(
       const result = await prisma.$transaction(async (tx) => {
         // upsert movie into Movies table
         const movieEntry = await tx.movies.upsert({
-          where: { tmdbId: movie.tmdbId },
+          where: { id: movie.id },
           update: {
             title: movie.title,
-            tmdbId: movie.tmdbId,
+            id: movie.id,
             description: movie.description,
             releaseDate: new Date(movie.releaseDate),
             posterUrl: movie.posterUrl,
@@ -72,7 +71,7 @@ watchlistRouter.post(
           },
           create: {
             title: movie.title,
-            tmdbId: movie.tmdbId,
+            id: movie.id,
             description: movie.description,
             releaseDate: new Date(movie.releaseDate),
             posterUrl: movie.posterUrl,
@@ -116,12 +115,67 @@ watchlistRouter.post(
   }
 );
 
+watchlistRouter.post('/bulk', validateReqBody(addBulkToWatchlistSchema), async (req, res) => {
+  const userId = req.user!.id;
+
+  const moviesToAdd: Movie[] = req.validatedBody?.movies;
+
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      // Upsert each movie individually to get their IDs
+      const movieEntries = await Promise.all(
+        moviesToAdd.map((movie) =>
+          tx.movies.upsert({
+            where: { id: movie.id },
+            update: {
+              title: movie.title,
+              description: movie.description,
+              releaseDate: new Date(movie.releaseDate),
+              posterUrl: movie.posterUrl,
+              genres: movie.genres,
+              ratings: movie.ratings,
+            },
+            create: {
+              id: movie.id,
+              title: movie.title,
+              description: movie.description,
+              releaseDate: new Date(movie.releaseDate),
+              posterUrl: movie.posterUrl,
+              genres: movie.genres,
+              ratings: movie.ratings,
+            },
+          })
+        )
+      );
+
+      // Create watchlist entries using the movie IDs
+      const watchlistEntries = await tx.watchlist.createMany({
+        data: movieEntries.map((movieEntry) => ({
+          userId,
+          movieId: movieEntry.id,
+        })),
+        skipDuplicates: true,
+      });
+
+      return { movieEntries, watchlistEntries };
+    });
+
+    const response = {
+      message: `${result.watchlistEntries.count} movies added to watchlist`,
+    };
+    res.status(201).json(response);
+  } catch (error) {
+    console.error('Error adding movies to watchlist:', error);
+    const errorResponse: WatchlistErrorResponse = {
+      message: 'Failed to add movies to watchlist',
+    };
+    res.status(500).json(errorResponse);
+  }
+});
+
 // delete route to remove a movie from user's watchlist
 
-watchlistRouter.delete(
-  '/:id',
-  validateReqParams(removeFromWatchlistSchema),
-  async (req, res) => {
+watchlistRouter.delete('/:id', validateReqParams(removeFromWatchlistSchema), async (req, res) => {
     if (!req.user?.id) {
       const errorResponse: WatchlistErrorResponse = { message: 'Unauthorized' };
       return res.status(401).json(errorResponse);

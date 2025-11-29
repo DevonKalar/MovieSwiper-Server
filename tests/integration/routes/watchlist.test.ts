@@ -21,7 +21,7 @@ describe('Watchlist Integration Tests', () => {
 
   const testMovieData: {movie: Movie} = {
     movie: {
-      tmdbId: 999999,
+      id: 999999,
       title: 'Test Movie',
       description: 'A test movie',
       releaseDate: '2024-01-01',
@@ -50,7 +50,7 @@ describe('Watchlist Integration Tests', () => {
     // Create a test movie
     const testMovie = await prisma.movies.create({
       data: {
-        tmdbId: 999999,
+        id: 999999,
         title: 'Test Movie',
         description: 'A test movie',
         releaseDate: new Date('2024-01-01'),
@@ -68,7 +68,7 @@ describe('Watchlist Integration Tests', () => {
   afterAll(async () => {
     // Clean up test data
     await prisma.watchlist.deleteMany({ where: { userId } });
-    await prisma.movies.deleteMany({ where: { tmdbId: 999999 } });
+    await prisma.movies.deleteMany({ where: { id: 999999 } });
     await prisma.user.deleteMany({
       where: { email: 'watchlist-test@example.com' },
     });
@@ -156,7 +156,7 @@ describe('Watchlist Integration Tests', () => {
     it('should return 400 for invalid movie data', async () => {
       const invalidData = {
         movie: {
-          tmdbId: 'invalid', // Should be number
+          id: 'invalid', // Should be number
           title: '',
         },
       };
@@ -179,6 +179,43 @@ describe('Watchlist Integration Tests', () => {
       expect(response.body).toMatchObject({
         message: expect.stringContaining('Unauthorized'),
       });
+    });
+  });
+
+  describe('POST /watchlist/bulk', () => {
+    it('should add multiple movies to watchlist', async () => {
+      const bulkMoviesData = {
+        movies: [
+          {
+            id: 888888,
+            title: 'Bulk Movie 1',
+            description: 'First bulk movie',
+            releaseDate: '2024-02-01',
+            posterUrl: 'https://example.com/bulk1.jpg',
+            genres: ['Comedy'],
+            ratings: 7.5,
+          },
+          {
+            id: 777777,
+            title: 'Bulk Movie 2',
+            description: 'Second bulk movie',
+            releaseDate: '2024-03-01',
+            posterUrl: 'https://example.com/bulk2.jpg',
+            genres: ['Horror'],
+            ratings: 6.5,
+          },
+        ],
+      };
+
+      const response = await request(app)
+        .post('/api/watchlist/bulk')
+        .set('Cookie', [`auth_token=${authToken}`])
+        .send(bulkMoviesData);
+      expect(response.status).toBe(201);
+      expect(response.body).toHaveProperty(
+        'message',
+        expect.stringContaining('movies added to watchlist')
+      );
     });
   });
 

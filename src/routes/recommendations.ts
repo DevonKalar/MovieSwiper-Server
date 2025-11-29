@@ -1,7 +1,13 @@
 import { Router } from 'express';
 import { validateReqQuery } from '../middleware/validate.js';
-import { movieRecommendationSchema, type RecommendationQuery } from '@/types/recommendations.js';
-import { fetchGuestRecommendations, fetchUserRecommendations } from '@/services/recommendations.js';
+import {
+  movieRecommendationSchema,
+  type RecommendationQuery,
+} from '@/types/recommendations.js';
+import {
+  fetchGuestRecommendations,
+  fetchUserRecommendations,
+} from '@/services/recommendations.js';
 
 /*
  * Recommendations routes for fetching movie recommendations based on user's watchlist.
@@ -9,12 +15,17 @@ import { fetchGuestRecommendations, fetchUserRecommendations } from '@/services/
 
 const recommendationsRouter = Router();
 
-recommendationsRouter.get('/', validateReqQuery(movieRecommendationSchema), async (req, res) => {
+recommendationsRouter.get(
+  '/',
+  validateReqQuery(movieRecommendationSchema),
+  async (req, res) => {
     try {
       const { page } = req.query as RecommendationQuery;
       const pageNumber = parseInt(page, 10);
       const userId = req.user?.id;
-
+      console.log(
+        `Received recommendation request for user ${userId ?? 'guest'} on page ${pageNumber}`
+      );
       const response = userId
         ? await fetchUserRecommendations(userId, pageNumber)
         : await fetchGuestRecommendations(pageNumber);

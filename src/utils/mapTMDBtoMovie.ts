@@ -3,7 +3,7 @@ import { mapIdsToGenres } from '@utils/genreMapping.js';
 
 export function apiMovieToMovie(movie: TMDBMovie): Movie {
   return {
-    tmdbId: movie.id,
+    id: movie.id,
     title: movie.title,
     posterUrl: movie.poster_path
       ? 'https://image.tmdb.org/t/p/w500' + movie.poster_path
