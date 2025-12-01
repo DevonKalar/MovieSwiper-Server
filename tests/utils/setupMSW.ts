@@ -9,7 +9,7 @@ import { server } from '../mocks/server.js';
  * ```typescript
  * import { setupMSW } from '@tests/utils/setupMSW.js';
  *
- * describe('tmdbService', () => {
+ * describe('tmdbClient', () => {
  *   setupMSW();
  *
  *   it('should fetch movie details', async () => {

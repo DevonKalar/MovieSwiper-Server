@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { server } from '@tests/mocks/server.js';
 import { http, HttpResponse } from 'msw';
-import { tmdbService } from '@services/tmdb.js';
+import { tmdbClient } from '@clients/tmdb.js';
 import { setupMSW } from '@tests/utils/setupMSW.js';
 
-describe('tmdbService', () => {
+describe('tmdbClient', () => {
   setupMSW();
   describe('fetchMovieDetails', () => {
     it('should fetch movie details for a valid movie ID', async () => {
@@ -18,7 +18,7 @@ describe('tmdbService', () => {
       };
 
       // Act
-      const result = await tmdbService.fetchMovieDetails(movieId);
+      const result = await tmdbClient.fetchMovieDetails(movieId);
 
       // Assert
       expect(result).toEqual(movieData);
@@ -42,7 +42,7 @@ describe('tmdbService', () => {
       );
 
       // Act
-      const result = await tmdbService.fetchPopularMovies();
+      const result = await tmdbClient.fetchPopularMovies();
 
       // Assert
       expect(result).toEqual(popularMoviesData);
@@ -66,7 +66,7 @@ describe('tmdbService', () => {
       );
 
       // Act
-      const response = await tmdbService.fetchGenres();
+      const response = await tmdbClient.fetchGenres();
 
       // Assert
       expect(response).toEqual(genreData.genres);
@@ -98,7 +98,7 @@ describe('tmdbService', () => {
       );
 
       // Act
-      const result = await tmdbService.fetchMoviesByQuery(query);
+      const result = await tmdbClient.fetchMoviesByQuery(query);
 
       // Assert
       expect(result).toEqual(moviesByQueryData);

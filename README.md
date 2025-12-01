@@ -17,13 +17,18 @@ Application
 
 ```
 src/
+├── app.ts           # Express application configuration and middleware setup
+├── server.ts        # Server startup and graceful shutdown handling
 ├── config/          # Environment configuration
-├── lib/             # Database and utility libraries
-├── middleware/      # Authentication, validation, rate limiting
-├── routes/          # API endpoints (auth, recommendations, watchlist)
-├── services/        # External service integrations (OpenAI, TMDB)
-├── types/           # TypeScript type definitions & Zod schemas
-└── utils/           # Utility functions (genre mapping, etc.)
+├── lib/             # Database and utility libraries (Prisma client)
+├── controllers/     # Route request and response handling
+├── middleware/      # Authentication and validation
+├── models/          # Zod schemas and inferred input types
+├── routes/          # API endpoint definitions (thin wrappers)
+├── services/        # Internal business logic (auth, recommendations, watchlist)
+├── clients/         # External service integrations (OpenAI, TMDB)
+├── types/           # TypeScript type definitions and response types
+└── utils/           # Utility functions (genre mapping, data transformations, etc.)
 ```
 
 Testing
@@ -51,12 +56,12 @@ The application uses PostgreSQL with three main tables:
 
 ### Movies
 
-- `id`: Primary key
-- `tmdbId`: Unique TMDB movie ID
+- `id`: Primary key (TMDB movie ID - synced with external API)
 - `title`, `description`: Movie information
 - `releaseDate`: Release date
-- `posterUrl`: Movie poster image URL
+- `posterUrl`: Movie poster image URL (nullable)
 - `genres`: Array of genre strings
+- `ratings`: Float rating value
 - `createdAt`, `updatedAt`: Timestamps
 
 ### Watchlist
@@ -284,8 +289,8 @@ All error responses follow consistent formats:
 
 ### Middleware Types
 
-- **`requireAuth`**: Blocks unauthenticated requests (401)
-- **`optionalAuth`**: Allows requests but extracts user if authenticated
+- **`requireUser`**: Blocks unauthenticated requests (401)
+- **`optionalUser`**: Allows requests but extracts user if authenticated
 - **`authRateLimiter`**: Rate limits authentication endpoints (stricter limits)
 - **`requestRateLimiter`**: General API rate limiting
 
@@ -333,10 +338,10 @@ npm run build         # Build for production
 npm start             # Start production server
 
 # Testing
-npm test              # Run all tests once
-npm run test:watch    # Run tests in watch mode
-npm run test:ui       # Open Vitest UI dashboard
-npm run vitest:coverage # Generate test coverage report
+npm test                  # Run all tests once
+npm run test:watch        # Run tests in watch mode
+npm run test:ui           # Open Vitest UI dashboard
+npm run vitest:coverage   # Generate test coverage report
 
 # Database
 npm run postinstall   # Generate Prisma client
@@ -394,7 +399,7 @@ npm run vitest:coverage
 npm run test:ui
 ```
 
-## 📝 Environment Variables
+## Environment Variables
 
 | Variable            | Description                  | Required |
 | ------------------- | ---------------------------- | -------- |
@@ -406,7 +411,7 @@ npm run test:ui
 | `NODE_ENV`          | Environment mode             | ❌       |
 | `CORS_ORIGINS`      | Allowed CORS origins         | ❌       |
 
-## 🚀 Deployment
+## Deployment
 
 ### Production Build
 
@@ -423,7 +428,7 @@ npm start
 4. Set appropriate `CORS_ORIGINS`
 5. Enable SSL/HTTPS in production
 
-## 📄 License
+## License
 
 This project is licensed under the ISC License - see the [LICENSE](LICENSE) file for details.
 

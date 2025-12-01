@@ -1,6 +1,10 @@
 import type { Movies } from '@prisma/client';
 
-export type Movie = Omit<Movies, 'releaseDate' | 'createdAt' | 'updatedAt'> & {
+export type Movie = Omit<
+  Movies,
+  'tmdbId' | 'releaseDate' | 'createdAt' | 'updatedAt'
+> & {
+  id: number;
   releaseDate: string;
 };
 

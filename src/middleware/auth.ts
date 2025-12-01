@@ -4,42 +4,57 @@ import rateLimit from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
 
 export const authRateLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 10,
-    message: 'Too many login attempts, please try again later.'
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  message: 'Too many login attempts, please try again later.',
 });
 
-export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
-  
+export const requireUser = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   // Check for token in Authorization header OR cookies
-  const token = req.headers.authorization?.split(' ')[1] || req.cookies?.auth_token;
-  
+  const token =
+    req.headers.authorization?.split(' ')[1] || req.cookies?.auth_token;
+
   if (!token) {
-      return res.status(401).json({ message: 'Unauthorized - No token' });
+    return res.status(401).json({ message: 'Unauthorized - No token' });
   }
 
   try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as JwtPayload;
-      req.user = decoded;
-      next();
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || ''
+    ) as JwtPayload;
+    req.user = decoded;
+    next();
   } catch (err) {
-      return res.status(401).json({ message: 'Unauthorized - Invalid token' });
+    return res.status(401).json({ message: 'Unauthorized - Invalid token' });
   }
 };
 
-export const optionalAuth = (req: Request, res: Response, next: NextFunction) => {
-  const token = req.headers.authorization?.split(' ')[1] || req.cookies?.auth_token;
-  
+export const optionalUser = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const token =
+    req.headers.authorization?.split(' ')[1] || req.cookies?.auth_token;
+
   if (!token) {
-      return next();
+    return next();
   }
 
   try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as JwtPayload;
-      req.user = decoded;
-      next();
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || ''
+    ) as JwtPayload;
+    req.user = decoded;
+    next();
   } catch (err) {
-      console.error('OptionalAuth - Token invalid');
-      next();
-    }
+    console.error('OptionalUser - Token invalid');
+    next();
+  }
 };
