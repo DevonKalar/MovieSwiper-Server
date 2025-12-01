@@ -1,8 +1,12 @@
 import { describe, it, expect, vi } from 'vitest';
-import { validateReqBody, validateReqParams, validateReqQuery} from '@middleware/validate.js';
-import { loginSchema, registerSchema } from '@/types/auth.js';
-import { movieDetailsSchema, movieQuerySchema, } from '@/types/tmdb.js';
-import { movieRecommendationSchema } from '@/types/recommendations.js';
+import {
+  validateReqBody,
+  validateReqParams,
+  validateReqQuery,
+} from '@middleware/validate.js';
+import { loginSchema, registerSchema } from '@/models/auth.js';
+import { movieDetailsSchema, movieQuerySchema } from '@/models/tmdb.js';
+import { movieRecommendationSchema } from '@/models/recommendations.js';
 import type { Request, Response, NextFunction } from 'express';
 
 describe('Validation Middleware', () => {

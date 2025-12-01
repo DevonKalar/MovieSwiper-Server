@@ -1,43 +1,34 @@
-import * as z from 'zod';
 import type { User } from '@prisma/client';
 
-// Schemas
-export const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-});
+// Omit sensitive fields from Prisma User type
+export type SafeUser = Omit<User, 'password'>;
 
-export const registerSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
-});
-
-// Input types - inferred from schemas
-export type LoginInput = z.infer<typeof loginSchema>;
-export type RegisterInput = z.infer<typeof registerSchema>;
-
-// Response types
-export type AuthSuccessData = {
-  message: string;
+// Auth user data (without password)
+export type AuthUser = {
+  id: number;
+  email: string;
   firstName: string;
   lastName: string;
-  email: string;
-  id: number;
 };
 
+// Response types
 export type LoginResponse = {
   message: string;
-} & AuthSuccessData;
+} & AuthUser;
 
 export type RegisterResponse = {
   message: string;
-} & AuthSuccessData;
+} & AuthUser;
 
 export type LogoutResponse = {
   message: string;
 };
 
-// Omit sensitive fields from Prisma User type
-export type SafeUser = Omit<User, 'password'>;
+export type CheckAuthResponse = {
+  message: string;
+} & AuthUser;
+
+// Error responses
+export type AuthErrorResponse = {
+  message: string;
+};

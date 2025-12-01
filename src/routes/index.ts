@@ -6,16 +6,17 @@ import tmdbRouter from './tmdb.js';
 import watchlistRouter from './watchlist.js';
 import recommendationsRouter from './recommendations.js';
 // Middleware
-import { authRateLimiter, requireAuth, optionalAuth } from '../middleware/auth.js';
-import { requestRateLimiter } from '../middleware/rateLimit.js';
+import {
+  authRateLimiter,
+  requireUser,
+} from '@middleware/auth.js';
 
-const serverRouter = Router();
+const appRouter = Router();
 
-// Add routes here
-serverRouter.use('/auth', authRateLimiter, authRouter);
-serverRouter.use('/openai', requestRateLimiter, openaiRouter);
-serverRouter.use('/tmdb', requestRateLimiter, tmdbRouter);
-serverRouter.use('/watchlist', requireAuth, requestRateLimiter, watchlistRouter);
-serverRouter.use('/recommendations', optionalAuth, requestRateLimiter, recommendationsRouter);
+appRouter.use('/auth', authRateLimiter, authRouter);
+appRouter.use('/openai', openaiRouter);
+appRouter.use('/tmdb', tmdbRouter);
+appRouter.use('/watchlist', requireUser, watchlistRouter);
+appRouter.use('/recommendations', recommendationsRouter);
 
-export default serverRouter;
+export default appRouter;

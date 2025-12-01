@@ -5,21 +5,20 @@ import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import prisma from '@/lib/prisma.js';
 import watchlistRouter from '@routes/watchlist.js';
-import { requireAuth } from '@middleware/auth.js';
+import { requireUser } from '@middleware/auth.js';
 import type { Movie } from '@/types/movie.js';
 
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
-app.use('/api/watchlist', requireAuth, watchlistRouter);
+app.use('/api/watchlist', requireUser, watchlistRouter);
 
 describe('Watchlist Integration Tests', () => {
-
   let userId: number;
   let movieId: number;
   let authToken: string;
 
-  const testMovieData: {movie: Movie} = {
+  const testMovieData: { movie: Movie } = {
     movie: {
       id: 999999,
       title: 'Test Movie',
@@ -30,7 +29,6 @@ describe('Watchlist Integration Tests', () => {
       ratings: 8.5,
     },
   };
-
 
   beforeAll(async () => {
     // Create a test user
@@ -62,7 +60,6 @@ describe('Watchlist Integration Tests', () => {
     movieId = testMovie.id;
 
     // Define reusable test movie data structures
-
   });
 
   afterAll(async () => {
@@ -123,7 +120,7 @@ describe('Watchlist Integration Tests', () => {
         .post('/api/watchlist')
         .set('Cookie', [`auth_token=${authToken}`])
         .send(testMovieData);
-        
+
       expect(response.status).toBe(201);
       expect(response.body).toHaveProperty(
         'message',

@@ -1,8 +1,8 @@
-import { defineConfig } from 'tsup'
-import { resolve } from 'path'
+import { defineConfig } from 'tsup';
+import { resolve } from 'path';
 
 export default defineConfig({
-  entry: ['src/index.ts'],
+  entry: ['src/server.ts'],
   format: ['esm'],
   splitting: false,
   sourcemap: true,
@@ -11,12 +11,15 @@ export default defineConfig({
     options.alias = {
       '@': resolve(__dirname, 'src'),
       '@tests': resolve(__dirname, 'tests'),
-      '@prisma/client': resolve(__dirname, 'node_modules/.prisma/client/index.d.ts'),
+      '@prisma/client': resolve(
+        __dirname,
+        'node_modules/.prisma/client/index.d.ts'
+      ),
       '@types': resolve(__dirname, 'src/types'),
       '@routes': resolve(__dirname, 'src/routes'),
       '@services': resolve(__dirname, 'src/services'),
       '@middleware': resolve(__dirname, 'src/middleware'),
       '@utils': resolve(__dirname, 'src/utils'),
-    }
-  }
-})
+    };
+  },
+});

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { apiMovieToMovie, apiMoviesToMovies } from '@/utils/mapTMDBtoMovie.js';  
+import { apiMovieToMovie, apiMoviesToMovies } from '@/utils/mapTMDBtoMovie.js';
 
-describe('mapTMDBtoMovie Utils' , () => {
+describe('mapTMDBtoMovie Utils', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -20,21 +20,21 @@ describe('mapTMDBtoMovie Utils' , () => {
       };
 
       const expectedMovie = {
-        tmdbId: 123,
+        id: 123,
         title: 'Sample Movie',
         posterUrl: 'https://image.tmdb.org/t/p/w500/sample.jpg',
         genres: ['Action', 'Adventure'],
         description: 'This is a sample movie.',
         ratings: 7.5,
-        releaseDate: '2023-01-01', 
-      }
+        releaseDate: '2023-01-01',
+      };
 
       // Act
       const result = apiMovieToMovie(tmdbMovie);
 
       // Assert
       expect(result).toEqual(expectedMovie);
-    })
+    });
     it('should handle malformed TMDB movie object gracefully', () => {
       // Arrange
       const malformedTmdbMovie = {
@@ -46,7 +46,7 @@ describe('mapTMDBtoMovie Utils' , () => {
 
       // Assert
       expect(result).toEqual({
-        tmdbId: 456,
+        id: 456,
         title: 'Malformed Movie',
         posterUrl: null,
         genres: [],
@@ -54,8 +54,8 @@ describe('mapTMDBtoMovie Utils' , () => {
         ratings: 0,
         releaseDate: '',
       });
-    })
-  })
+    });
+  });
 
   describe('apiMoviesToMovies', () => {
     it('should map array of TMDB movie objects to array of internal Movie objects', () => {
@@ -83,7 +83,7 @@ describe('mapTMDBtoMovie Utils' , () => {
 
       const expectedMovies = [
         {
-          tmdbId: 123,
+          id: 123,
           title: 'Sample Movie 1',
           posterUrl: 'https://image.tmdb.org/t/p/w500/sample1.jpg',
           genres: ['Action'],
@@ -92,7 +92,7 @@ describe('mapTMDBtoMovie Utils' , () => {
           releaseDate: '2023-01-01',
         },
         {
-          tmdbId: 456,
+          id: 456,
           title: 'Sample Movie 2',
           posterUrl: 'https://image.tmdb.org/t/p/w500/sample2.jpg',
           genres: ['Adventure'],
@@ -106,6 +106,6 @@ describe('mapTMDBtoMovie Utils' , () => {
       const result = apiMoviesToMovies(tmdbMovies);
       // Assert
       expect(result).toEqual(expectedMovies);
-    })
-  })
+    });
+  });
 });

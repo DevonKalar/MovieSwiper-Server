@@ -1,11 +1,11 @@
-import { type MovieQuery } from '../types/tmdb.js';
+import { type MovieQuery } from '../models/tmdb.js';
 
-class TMDBService {
+class TMDBClient {
   private baseURL: string;
   private token: string;
 
   constructor() {
-    this.baseURL = "https://api.themoviedb.org/3/";
+    this.baseURL = 'https://api.themoviedb.org/3/';
     this.token = process.env.TMDB_BEARER_TOKEN || '';
   }
 
@@ -19,12 +19,12 @@ class TMDBService {
         },
       });
       if (!response.ok) {
-        throw new Error("Network response was not ok");
+        throw new Error('Network response was not ok');
       }
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error("Fetch movie details failed:", error);
+      console.error('Fetch movie details failed:', error);
       return null;
     }
   }
@@ -54,12 +54,12 @@ class TMDBService {
         },
       });
       if (!response.ok) {
-        throw new Error("Network response was not ok");
+        throw new Error('Network response was not ok');
       }
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error("Fetch movies failed:", error);
+      console.error('Fetch movies failed:', error);
       return [];
     }
   }
@@ -75,12 +75,12 @@ class TMDBService {
         },
       });
       if (!response.ok) {
-        throw new Error("Network response was not ok");
+        throw new Error('Network response was not ok');
       }
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error("Fetch popular movies failed:", error);
+      console.error('Fetch popular movies failed:', error);
       return [];
     }
   }
@@ -96,12 +96,12 @@ class TMDBService {
         },
       });
       if (!response.ok) {
-        throw new Error("Network response was not ok");
+        throw new Error('Network response was not ok');
       }
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error("Fetch movies by genre failed:", error);
+      console.error('Fetch movies by genre failed:', error);
       return [];
     }
   }
@@ -117,15 +117,15 @@ class TMDBService {
         },
       });
       if (!response.ok) {
-        throw new Error("Network response was not ok");
+        throw new Error('Network response was not ok');
       }
       const data = await response.json();
       return data.genres;
     } catch (error) {
-      console.error("Fetch genres failed:", error);
+      console.error('Fetch genres failed:', error);
       return [];
     }
   }
 }
 
-export const tmdbService = new TMDBService();
+export const tmdbClient = new TMDBClient();
