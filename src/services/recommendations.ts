@@ -1,10 +1,10 @@
-import { tmdbClient } from "@/clients/tmdb.js";
+import { fetchPopularMovies } from "@/clients/tmdb.js";
 import { apiMoviesToMovies } from "@utils/mapTMDBtoMovie.js";
 import type { Movie, TMDBMovie } from "@/types/movie.js";
 import prisma from "@/lib/prisma.js";
 
 export async function fetchGuestRecommendations(page: number) {
-  const tmdbFetch = await tmdbClient.fetchPopularMovies(page);
+  const tmdbFetch = await fetchPopularMovies(page);
   const movieResults = apiMoviesToMovies(tmdbFetch.results);
 
   return {
@@ -36,7 +36,7 @@ export async function fetchUserRecommendations(
   const maxPages = startPage + 10;
 
   while (tmdbResults.length < limit && currentPage < maxPages) {
-    const movies = await tmdbClient.fetchPopularMovies(currentPage);
+    const movies = await fetchPopularMovies(currentPage);
     if (!movies?.results) break;
     console.log(
       `Fetched page ${currentPage} with ${movies.results.length} movies`,
