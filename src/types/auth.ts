@@ -1,7 +1,7 @@
-import type { User } from '@prisma/client';
+import type { User } from "@prisma/client";
 
 // Omit sensitive fields from Prisma User type
-export type SafeUser = Omit<User, 'password'>;
+export type SafeUser = Omit<User, "password">;
 
 // Auth user data (without password)
 export type AuthUser = {

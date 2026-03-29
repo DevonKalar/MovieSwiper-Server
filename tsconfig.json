@@ -25,7 +25,6 @@
       "@routes/*": ["./src/routes/*"],
       "@services/*": ["./src/services/*"],
       "@clients/*": ["./src/clients/*"],
-      "@controllers/*": ["./src/controllers/*"],
       "@middleware/*": ["./src/middleware/*"],
       "@utils/*": ["./src/utils/*"]
     }

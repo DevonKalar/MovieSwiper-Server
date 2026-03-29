@@ -1,15 +1,15 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { server } from '@tests/mocks/server.js';
-import { http, HttpResponse } from 'msw';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { server } from "@tests/mocks/server.js";
+import { http, HttpResponse } from "msw";
 import {
   fetchGuestRecommendations,
   fetchUserRecommendations,
-} from '@services/recommendations.js';
-import { apiMoviesToMovies } from '@/utils/mapTMDBtoMovie.js';
-import { setupMSW } from '@tests/utils/setupMSW.js';
-import prisma from '@/lib/prisma.js';
+} from "@services/recommendations.js";
+import { apiMoviesToMovies } from "@/utils/mapTMDBtoMovie.js";
+import { setupMSW } from "@tests/utils/setupMSW.js";
+import prisma from "@/lib/prisma.js";
 
-vi.mock('@/lib/prisma.js', () => ({
+vi.mock("@/lib/prisma.js", () => ({
   default: {
     watchlist: {
       findMany: vi.fn(),
@@ -17,14 +17,14 @@ vi.mock('@/lib/prisma.js', () => ({
   },
 }));
 
-describe('recommendationsService', () => {
+describe("recommendationsService", () => {
   setupMSW();
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
-  describe('fetchGuestRecommendations', () => {
-    it('should fetch guest recommendations', async () => {
+  describe("fetchGuestRecommendations", () => {
+    it("should fetch guest recommendations", async () => {
       // Arrange
       const page = 1;
       const tmdbMoviesData = {
@@ -32,21 +32,21 @@ describe('recommendationsService', () => {
         results: [
           {
             id: 1,
-            title: 'Popular Movie 1',
+            title: "Popular Movie 1",
             genre_ids: [28],
-            poster_path: '/path1.jpg',
-            overview: 'Overview 1',
+            poster_path: "/path1.jpg",
+            overview: "Overview 1",
             vote_average: 8.5,
-            release_date: '2023-01-01',
+            release_date: "2023-01-01",
           },
           {
             id: 2,
-            title: 'Popular Movie 2',
+            title: "Popular Movie 2",
             genre_ids: [12],
-            poster_path: '/path2.jpg',
-            overview: 'Overview 2',
+            poster_path: "/path2.jpg",
+            overview: "Overview 2",
             vote_average: 7.0,
-            release_date: '2023-02-01',
+            release_date: "2023-02-01",
           },
         ],
         total_pages: 1,
@@ -54,9 +54,9 @@ describe('recommendationsService', () => {
       };
       const expectedMovies = apiMoviesToMovies(tmdbMoviesData.results);
       server.use(
-        http.get('https://api.themoviedb.org/3/movie/popular', () => {
+        http.get("https://api.themoviedb.org/3/movie/popular", () => {
           return HttpResponse.json(tmdbMoviesData);
-        })
+        }),
       );
 
       // Act
@@ -69,8 +69,8 @@ describe('recommendationsService', () => {
     });
   });
 
-  describe('fetchUserRecommendations', () => {
-    it('should fetch user recommendations excluding watchlist movies', async () => {
+  describe("fetchUserRecommendations", () => {
+    it("should fetch user recommendations excluding watchlist movies", async () => {
       // Arrange
       const userId = 1;
       const startPage = 1;
@@ -79,30 +79,30 @@ describe('recommendationsService', () => {
         results: [
           {
             id: 1,
-            title: 'Popular Movie 1',
+            title: "Popular Movie 1",
             genre_ids: [28],
-            poster_path: '/path1.jpg',
-            overview: 'Overview 1',
+            poster_path: "/path1.jpg",
+            overview: "Overview 1",
             vote_average: 8.5,
-            release_date: '2023-01-01',
+            release_date: "2023-01-01",
           },
           {
             id: 2,
-            title: 'Watchlisted Movie',
+            title: "Watchlisted Movie",
             genre_ids: [16],
-            poster_path: '/path2.jpg',
-            overview: 'Overview 2',
+            poster_path: "/path2.jpg",
+            overview: "Overview 2",
             vote_average: 7.0,
-            release_date: '2023-02-01',
+            release_date: "2023-02-01",
           },
           {
             id: 3,
-            title: 'Popular Movie 3',
+            title: "Popular Movie 3",
             genre_ids: [12],
-            poster_path: '/path3.jpg',
-            overview: 'Overview 3',
+            poster_path: "/path3.jpg",
+            overview: "Overview 3",
             vote_average: 7.5,
-            release_date: '2023-03-01',
+            release_date: "2023-03-01",
           },
         ],
         total_pages: 1,
@@ -111,21 +111,21 @@ describe('recommendationsService', () => {
       const expectedMovies = apiMoviesToMovies([
         {
           id: 1,
-          title: 'Popular Movie 1',
+          title: "Popular Movie 1",
           genre_ids: [28],
-          poster_path: '/path1.jpg',
-          overview: 'Overview 1',
+          poster_path: "/path1.jpg",
+          overview: "Overview 1",
           vote_average: 8.5,
-          release_date: '2023-01-01',
+          release_date: "2023-01-01",
         },
         {
           id: 3,
-          title: 'Popular Movie 3',
+          title: "Popular Movie 3",
           genre_ids: [12],
-          poster_path: '/path3.jpg',
-          overview: 'Overview 3',
+          poster_path: "/path3.jpg",
+          overview: "Overview 3",
           vote_average: 7.5,
-          release_date: '2023-03-01',
+          release_date: "2023-03-01",
         },
       ]);
 
@@ -136,12 +136,12 @@ describe('recommendationsService', () => {
 
       server.use(
         http.get(
-          'https://api.themoviedb.org/3/movie/popular',
+          "https://api.themoviedb.org/3/movie/popular",
           ({ request }) => {
             const url = new URL(request.url);
-            const page = url.searchParams.get('page');
+            const page = url.searchParams.get("page");
             // Return data only for page 1, empty for other pages
-            if (page === '1' || !page) {
+            if (page === "1" || !page) {
               return HttpResponse.json(tmdbMoviesData);
             }
             return HttpResponse.json({
@@ -150,8 +150,8 @@ describe('recommendationsService', () => {
               total_pages: 1,
               total_results: 0,
             });
-          }
-        )
+          },
+        ),
       );
 
       // Act
@@ -164,7 +164,7 @@ describe('recommendationsService', () => {
       });
     });
 
-    it('should fetch additional pages when all movies on current page are in watchlist', async () => {
+    it("should fetch additional pages when all movies on current page are in watchlist", async () => {
       // Arrange
       const userId = 1;
       const startPage = 1;
@@ -173,21 +173,21 @@ describe('recommendationsService', () => {
         results: [
           {
             id: 1,
-            title: 'Watchlisted Movie 1',
+            title: "Watchlisted Movie 1",
             genre_ids: [28],
-            poster_path: '/path1.jpg',
-            overview: 'Overview 1',
+            poster_path: "/path1.jpg",
+            overview: "Overview 1",
             vote_average: 8.5,
-            release_date: '2023-01-01',
+            release_date: "2023-01-01",
           },
           {
             id: 2,
-            title: 'Watchlisted Movie 2',
+            title: "Watchlisted Movie 2",
             genre_ids: [16],
-            poster_path: '/path2.jpg',
-            overview: 'Overview 2',
+            poster_path: "/path2.jpg",
+            overview: "Overview 2",
             vote_average: 7.0,
-            release_date: '2023-02-01',
+            release_date: "2023-02-01",
           },
         ],
         total_pages: 2,
@@ -198,21 +198,21 @@ describe('recommendationsService', () => {
         results: [
           {
             id: 3,
-            title: 'Popular Movie 3',
+            title: "Popular Movie 3",
             genre_ids: [12],
-            poster_path: '/path3.jpg',
-            overview: 'Overview 3',
+            poster_path: "/path3.jpg",
+            overview: "Overview 3",
             vote_average: 7.5,
-            release_date: '2023-03-01',
+            release_date: "2023-03-01",
           },
           {
             id: 4,
-            title: 'Popular Movie 4',
+            title: "Popular Movie 4",
             genre_ids: [35],
-            poster_path: '/path4.jpg',
-            overview: 'Overview 4',
+            poster_path: "/path4.jpg",
+            overview: "Overview 4",
             vote_average: 6.5,
-            release_date: '2023-04-01',
+            release_date: "2023-04-01",
           },
         ],
         total_pages: 2,
@@ -221,21 +221,21 @@ describe('recommendationsService', () => {
       const expectedMovies = apiMoviesToMovies([
         {
           id: 3,
-          title: 'Popular Movie 3',
+          title: "Popular Movie 3",
           genre_ids: [12],
-          poster_path: '/path3.jpg',
-          overview: 'Overview 3',
+          poster_path: "/path3.jpg",
+          overview: "Overview 3",
           vote_average: 7.5,
-          release_date: '2023-03-01',
+          release_date: "2023-03-01",
         },
         {
           id: 4,
-          title: 'Popular Movie 4',
+          title: "Popular Movie 4",
           genre_ids: [35],
-          poster_path: '/path4.jpg',
-          overview: 'Overview 4',
+          poster_path: "/path4.jpg",
+          overview: "Overview 4",
           vote_average: 6.5,
-          release_date: '2023-04-01',
+          release_date: "2023-04-01",
         },
       ]);
 
@@ -247,13 +247,13 @@ describe('recommendationsService', () => {
 
       server.use(
         http.get(
-          'https://api.themoviedb.org/3/movie/popular',
+          "https://api.themoviedb.org/3/movie/popular",
           ({ request }) => {
             const url = new URL(request.url);
-            const page = url.searchParams.get('page');
-            if (page === '1') {
+            const page = url.searchParams.get("page");
+            if (page === "1") {
               return HttpResponse.json(tmdbMoviesDataPage1);
-            } else if (page === '2') {
+            } else if (page === "2") {
               return HttpResponse.json(tmdbMoviesDataPage2);
             }
             return HttpResponse.json({
@@ -262,8 +262,8 @@ describe('recommendationsService', () => {
               total_pages: 1,
               total_results: 0,
             });
-          }
-        )
+          },
+        ),
       );
 
       // Act

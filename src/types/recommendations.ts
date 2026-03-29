@@ -1,4 +1,4 @@
-import type { Movie } from './movie.js';
+import type { Movie } from "./movie.js";
 
 // Response types
 export type RecommendationsResponse = {

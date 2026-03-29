@@ -1,4 +1,4 @@
-import type { Watchlist, Movies } from '@prisma/client';
+import type { Watchlist, Movies } from "@prisma/client";
 
 // Domain types
 export type WatchlistItemWithMovie = Watchlist & {
@@ -8,11 +8,6 @@ export type WatchlistItemWithMovie = Watchlist & {
 // Response types
 export type WatchlistResponse = {
   watchlist: WatchlistItemWithMovie[];
-};
-
-export type AddToWatchlistResponse = {
-  message: string;
-  watchlistItem: Watchlist;
 };
 
 export type BulkAddToWatchlistResponse = {

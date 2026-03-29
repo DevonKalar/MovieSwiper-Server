@@ -1,5 +1,5 @@
-import { beforeAll, afterAll, afterEach } from 'vitest';
-import { server } from '../mocks/server.js';
+import { beforeAll, afterAll, afterEach } from "vitest";
+import { server } from "../mocks/server.js";
 
 /**
  * Sets up MSW (Mock Service Worker) for tests that need to mock external API calls.
@@ -20,7 +20,7 @@ import { server } from '../mocks/server.js';
  */
 export function setupMSW() {
   beforeAll(() => {
-    server.listen({ onUnhandledRequest: 'error' });
+    server.listen({ onUnhandledRequest: "error" });
   });
 
   afterEach(() => {

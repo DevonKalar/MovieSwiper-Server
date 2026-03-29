@@ -1,7 +1,7 @@
-import { tmdbClient } from '@/clients/tmdb.js';
-import { apiMoviesToMovies } from '@utils/mapTMDBtoMovie.js';
-import type { Movie, TMDBMovie } from '@/types/movie.js';
-import prisma from '@/lib/prisma.js';
+import { tmdbClient } from "@/clients/tmdb.js";
+import { apiMoviesToMovies } from "@utils/mapTMDBtoMovie.js";
+import type { Movie, TMDBMovie } from "@/types/movie.js";
+import prisma from "@/lib/prisma.js";
 
 export async function fetchGuestRecommendations(page: number) {
   const tmdbFetch = await tmdbClient.fetchPopularMovies(page);
@@ -16,7 +16,7 @@ export async function fetchGuestRecommendations(page: number) {
 
 export async function fetchUserRecommendations(
   userId: number,
-  startPage: number
+  startPage: number,
 ) {
   const limit = 20;
 
@@ -39,10 +39,10 @@ export async function fetchUserRecommendations(
     const movies = await tmdbClient.fetchPopularMovies(currentPage);
     if (!movies?.results) break;
     console.log(
-      `Fetched page ${currentPage} with ${movies.results.length} movies`
+      `Fetched page ${currentPage} with ${movies.results.length} movies`,
     );
     const filtered = movies.results.filter(
-      (movie: Movie) => !watchlistIdSet.has(movie.id)
+      (movie: Movie) => !watchlistIdSet.has(movie.id),
     );
     tmdbResults.push(...filtered);
     currentPage += 1;

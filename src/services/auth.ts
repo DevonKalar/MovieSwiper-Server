@@ -1,15 +1,15 @@
-import prisma from '@/lib/prisma.js';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import type { Response } from 'express';
+import prisma from "@/lib/prisma.js";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import type { Response } from "express";
 
-const isProduction = process.env.NODE_ENV === 'production';
+const isProduction = process.env.NODE_ENV === "production";
 
 export const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: isProduction,
-  sameSite: isProduction ? ('none' as const) : ('lax' as const),
-  path: '/',
+  sameSite: isProduction ? ("none" as const) : ("lax" as const),
+  path: "/",
   maxAge: 24 * 60 * 60 * 1000, // 1 day in milliseconds
 } as const;
 
@@ -22,26 +22,26 @@ export interface UserPayload {
 
 export function signToken(userId: number): string {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET!, {
-    expiresIn: '1d',
+    expiresIn: "1d",
   });
 }
 
 export function setAuthCookie(res: Response, token: string): void {
-  res.cookie('auth_token', token, COOKIE_OPTIONS);
+  res.cookie("auth_token", token, COOKIE_OPTIONS);
 }
 
 export function clearAuthCookie(res: Response): void {
-  res.clearCookie('auth_token', {
+  res.clearCookie("auth_token", {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction ? 'none' : 'lax',
-    path: '/',
+    sameSite: isProduction ? "none" : "lax",
+    path: "/",
   });
 }
 
 export async function authenticateUser(
   email: string,
-  password: string
+  password: string,
 ): Promise<UserPayload | null> {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
@@ -65,7 +65,7 @@ export async function createUser(
   email: string,
   password: string,
   firstName: string,
-  lastName: string
+  lastName: string,
 ): Promise<UserPayload> {
   const hashedPassword = await bcrypt.hash(password, 12);
   const user = await prisma.user.create({
@@ -86,7 +86,7 @@ export async function createUser(
 }
 
 export async function findUserById(
-  userId: number
+  userId: number,
 ): Promise<UserPayload | null> {
   const user = await prisma.user.findUnique({
     where: { id: userId },

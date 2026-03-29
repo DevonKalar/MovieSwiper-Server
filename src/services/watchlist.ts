@@ -1,11 +1,11 @@
-import prisma from '@/lib/prisma.js';
-import type { Movie } from '@/types/movie.js';
+import prisma from "@/lib/prisma.js";
+import type { Movie } from "@/types/movie.js";
 
 export async function getWatchlist(userId: number) {
   return await prisma.watchlist.findMany({
     where: { userId },
     include: { movie: true },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { createdAt: "desc" },
   });
 }
 
@@ -48,7 +48,7 @@ export async function addMovieToWatchlist(userId: number, movie: Movie) {
 
 export async function addBulkMoviesToWatchlist(
   userId: number,
-  movies: Movie[]
+  movies: Movie[],
 ) {
   const result = await prisma.$transaction(async (tx) => {
     // Upsert each movie individually to get their IDs
@@ -73,8 +73,8 @@ export async function addBulkMoviesToWatchlist(
             genres: movie.genres,
             ratings: movie.ratings,
           },
-        })
-      )
+        }),
+      ),
     );
 
     // Create watchlist entries using the movie IDs
@@ -94,7 +94,7 @@ export async function addBulkMoviesToWatchlist(
 
 export async function removeMovieFromWatchlist(
   userId: number,
-  movieId: number
+  movieId: number,
 ) {
   const watchlistEntry = await prisma.watchlist.findFirst({
     where: {
@@ -104,7 +104,7 @@ export async function removeMovieFromWatchlist(
   });
 
   if (!watchlistEntry) {
-    throw new Error('Watchlist item not found');
+    throw new Error("Watchlist item not found");
   }
 
   await prisma.watchlist.delete({
