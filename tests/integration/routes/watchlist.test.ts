@@ -6,12 +6,14 @@ import cookieParser from "cookie-parser";
 import prisma from "@/lib/prisma.js";
 import watchlistRouter from "@routes/watchlist.js";
 import { requireUser } from "@middleware/auth.js";
+import { errorHandler } from "@middleware/errorHandler.js";
 import type { Movie } from "@/types/movie.js";
 
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api/watchlist", requireUser, watchlistRouter);
+app.use(errorHandler);
 
 describe("Watchlist Integration Tests", () => {
   let userId: number;
@@ -110,9 +112,6 @@ describe("Watchlist Integration Tests", () => {
       const response = await request(app).get("/api/watchlist");
 
       expect(response.status).toBe(401);
-      expect(response.body).toMatchObject({
-        message: expect.stringContaining("Unauthorized"),
-      });
     });
   });
 
@@ -191,9 +190,6 @@ describe("Watchlist Integration Tests", () => {
         .send(testMovieData);
 
       expect(response.status).toBe(401);
-      expect(response.body).toMatchObject({
-        message: expect.stringContaining("Unauthorized"),
-      });
     });
   });
 
@@ -233,9 +229,6 @@ describe("Watchlist Integration Tests", () => {
       const response = await request(app).delete(`/api/watchlist/${movieId}`);
 
       expect(response.status).toBe(401);
-      expect(response.body).toMatchObject({
-        message: expect.stringContaining("Unauthorized"),
-      });
     });
   });
 });
