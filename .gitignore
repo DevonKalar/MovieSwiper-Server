@@ -17,3 +17,6 @@ src/generated
 
 # Cursor
 .cursor
+
+# Dist
+dist/

@@ -8,7 +8,7 @@ import type {
   TMDBMoviesResponse,
   TMDBGenresResponse,
 } from "@/types/tmdb.js";
-import { tmdbClient } from "@/clients/tmdb.js";
+import { fetchMovieDetails, fetchMoviesByQuery, fetchGenres } from "@/clients/tmdb.js";
 import { NotFoundError } from "@middleware/errorHandler.js";
 
 const tmdbRouter = Router();
@@ -18,7 +18,7 @@ tmdbRouter.get(
   validateReqParams(movieDetailsSchema),
   async (req: Request, res: Response<TMDBMovieDetails>) => {
     const { id } = req.validatedParams as MovieDetailsParams;
-    const movieDetails = await tmdbClient.fetchMovieDetails(parseInt(id, 10));
+    const movieDetails = await fetchMovieDetails(parseInt(id, 10));
     if (!movieDetails) {
       throw new NotFoundError("Movie not found");
     }
@@ -31,7 +31,7 @@ tmdbRouter.get(
   validateReqQuery(movieQuerySchema),
   async (req: Request, res: Response<TMDBMoviesResponse>) => {
     const query = req.validatedQuery as MovieQuery;
-    const movies = await tmdbClient.fetchMoviesByQuery(query);
+    const movies = await fetchMoviesByQuery(query);
     res.json(movies);
   },
 );
@@ -39,7 +39,7 @@ tmdbRouter.get(
 tmdbRouter.get(
   "/genres",
   async (req: Request, res: Response<TMDBGenresResponse>) => {
-    const genres = await tmdbClient.fetchGenres();
+    const genres = await fetchGenres();
     res.json(genres);
   },
 );

@@ -1,131 +1,60 @@
-import { type MovieQuery } from "../models/tmdb.js";
+import { tmdbAxios } from "@/lib/tmdbAxios.js";
+import { type MovieQuery } from "@models/tmdb.js";
 
-class TMDBClient {
-  private baseURL: string;
-  private token: string;
-
-  constructor() {
-    this.baseURL = "https://api.themoviedb.org/3/";
-    this.token = process.env.TMDB_BEARER_TOKEN || "";
-  }
-
-  async fetchMovieDetails(movieId: number) {
-    const url = `${this.baseURL}movie/${movieId}?language=en-US`;
-    try {
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-          "Content-Type": "application/json;charset=utf-8",
-        },
-      });
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Fetch movie details failed:", error);
-      return null;
-    }
-  }
-
-  async fetchMoviesByQuery(params: MovieQuery) {
-    const queryParams: Record<string, string> = {
-      include_adult: params.include_adult,
-      include_video: params.include_video,
-      language: params.language,
-      page: params.page,
-      sort_by: params.sort_by,
-    };
-
-    if (params.with_genres) {
-      queryParams.with_genres = params.with_genres;
-    }
-
-    const queryString = new URLSearchParams(queryParams).toString();
-
-    const url = `${this.baseURL}discover/movie?${queryString}`;
-    try {
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization: `Bearer ${this.token}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Fetch movies failed:", error);
-      return [];
-    }
-  }
-
-  async fetchPopularMovies(page: number = 1) {
-    const url = `${this.baseURL}movie/popular?language=en-US&page=${page}`;
-    try {
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization: `Bearer ${this.token}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Fetch popular movies failed:", error);
-      return [];
-    }
-  }
-
-  async fetchMoviesByGenre(genreId: string, page: number = 1) {
-    const url = `${this.baseURL}discover/movie?with_genres=${genreId}&language=en-US&page=${page}`;
-    try {
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization: `Bearer ${this.token}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Fetch movies by genre failed:", error);
-      return [];
-    }
-  }
-
-  async fetchGenres() {
-    const url = `${this.baseURL}genre/movie/list?language=en-US`;
-    try {
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization: `Bearer ${this.token}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const data = await response.json();
-      return data.genres;
-    } catch (error) {
-      console.error("Fetch genres failed:", error);
-      return [];
-    }
+export async function fetchMovieDetails(movieId: number) {
+  try {
+    const { data } = await tmdbAxios.get(`movie/${movieId}`, {
+      params: { language: "en-US" },
+    });
+    return data;
+  } catch (error) {
+    console.error("Fetch movie details failed:", error);
+    return null;
   }
 }
 
-export const tmdbClient = new TMDBClient();
+export async function fetchMoviesByQuery(params: MovieQuery) {
+  try {
+    const { data } = await tmdbAxios.get("discover/movie", { params });
+    return data;
+  } catch (error) {
+    console.error("Fetch movies failed:", error);
+    return [];
+  }
+}
+
+export async function fetchPopularMovies(page: number = 1) {
+  try {
+    const { data } = await tmdbAxios.get("movie/popular", {
+      params: { language: "en-US", page },
+    });
+    return data;
+  } catch (error) {
+    console.error("Fetch popular movies failed:", error);
+    return [];
+  }
+}
+
+export async function fetchMoviesByGenre(genreId: string, page: number = 1) {
+  try {
+    const { data } = await tmdbAxios.get("discover/movie", {
+      params: { with_genres: genreId, language: "en-US", page },
+    });
+    return data;
+  } catch (error) {
+    console.error("Fetch movies by genre failed:", error);
+    return [];
+  }
+}
+
+export async function fetchGenres() {
+  try {
+    const { data } = await tmdbAxios.get("genre/movie/list", {
+      params: { language: "en-US" },
+    });
+    return data.genres;
+  } catch (error) {
+    console.error("Fetch genres failed:", error);
+    return [];
+  }
+}
