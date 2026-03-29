@@ -60,6 +60,7 @@ Defined in both `tsconfig.json` and `vitest.config.ts`:
 - **Unit tests** (`tests/unit/`) use MSW (Mock Service Worker) via `setupMSW()` to intercept HTTP calls to TMDB/OpenAI. MSW handlers live in `tests/mocks/handlers.ts`.
 - **Integration tests** (`tests/integration/`) use Supertest against a real PostgreSQL database. They create test data in `beforeAll` and clean up in `afterAll`. Each test file spins up its own Express app instance with the router under test.
 - Tests use Vitest globals (`describe`, `it`, `expect`) — no imports needed for these.
+- **Co-location:** tests for a module should live in a `__tests__/` folder adjacent to that module (e.g. `src/middleware/__tests__/errorHandler.test.ts`). Use `tests/unit/` and `tests/integration/` only for tests that don't have a natural co-location point.
 
 ## Environment Variables
 

@@ -1,4 +1,4 @@
-import type { Watchlist, Movies } from "@prisma/client";
+import type { Watchlist, Movies } from "@/generated/prisma/client.js";
 
 // Domain types
 export type WatchlistItemWithMovie = Watchlist & {
