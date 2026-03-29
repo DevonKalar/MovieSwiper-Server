@@ -1,4 +1,4 @@
-import type { Movies } from "@prisma/client";
+import type { Movies } from "@/generated/prisma/client.js";
 
 export type Movie = Omit<
   Movies,
