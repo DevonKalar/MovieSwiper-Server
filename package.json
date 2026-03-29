@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsup",
     "lint": "eslint . --ext .ts",
+    "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",

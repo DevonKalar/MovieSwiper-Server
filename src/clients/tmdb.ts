@@ -1,12 +1,12 @@
-import { type MovieQuery } from '../models/tmdb.js';
+import { type MovieQuery } from "../models/tmdb.js";
 
 class TMDBClient {
   private baseURL: string;
   private token: string;
 
   constructor() {
-    this.baseURL = 'https://api.themoviedb.org/3/';
-    this.token = process.env.TMDB_BEARER_TOKEN || '';
+    this.baseURL = "https://api.themoviedb.org/3/";
+    this.token = process.env.TMDB_BEARER_TOKEN || "";
   }
 
   async fetchMovieDetails(movieId: number) {
@@ -15,16 +15,16 @@ class TMDBClient {
       const response = await fetch(url, {
         headers: {
           Authorization: `Bearer ${this.token}`,
-          'Content-Type': 'application/json;charset=utf-8',
+          "Content-Type": "application/json;charset=utf-8",
         },
       });
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error("Network response was not ok");
       }
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('Fetch movie details failed:', error);
+      console.error("Fetch movie details failed:", error);
       return null;
     }
   }
@@ -47,19 +47,19 @@ class TMDBClient {
     const url = `${this.baseURL}discover/movie?${queryString}`;
     try {
       const response = await fetch(url, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          accept: 'application/json',
+          accept: "application/json",
           Authorization: `Bearer ${this.token}`,
         },
       });
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error("Network response was not ok");
       }
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('Fetch movies failed:', error);
+      console.error("Fetch movies failed:", error);
       return [];
     }
   }
@@ -68,19 +68,19 @@ class TMDBClient {
     const url = `${this.baseURL}movie/popular?language=en-US&page=${page}`;
     try {
       const response = await fetch(url, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          accept: 'application/json',
+          accept: "application/json",
           Authorization: `Bearer ${this.token}`,
         },
       });
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error("Network response was not ok");
       }
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('Fetch popular movies failed:', error);
+      console.error("Fetch popular movies failed:", error);
       return [];
     }
   }
@@ -89,19 +89,19 @@ class TMDBClient {
     const url = `${this.baseURL}discover/movie?with_genres=${genreId}&language=en-US&page=${page}`;
     try {
       const response = await fetch(url, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          accept: 'application/json',
+          accept: "application/json",
           Authorization: `Bearer ${this.token}`,
         },
       });
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error("Network response was not ok");
       }
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('Fetch movies by genre failed:', error);
+      console.error("Fetch movies by genre failed:", error);
       return [];
     }
   }
@@ -110,19 +110,19 @@ class TMDBClient {
     const url = `${this.baseURL}genre/movie/list?language=en-US`;
     try {
       const response = await fetch(url, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          accept: 'application/json',
+          accept: "application/json",
           Authorization: `Bearer ${this.token}`,
         },
       });
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error("Network response was not ok");
       }
       const data = await response.json();
       return data.genres;
     } catch (error) {
-      console.error('Fetch genres failed:', error);
+      console.error("Fetch genres failed:", error);
       return [];
     }
   }

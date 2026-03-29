@@ -1,8 +1,8 @@
-import type { Movies } from '@prisma/client';
+import type { Movies } from "@prisma/client";
 
 export type Movie = Omit<
   Movies,
-  'tmdbId' | 'releaseDate' | 'createdAt' | 'updatedAt'
+  "tmdbId" | "releaseDate" | "createdAt" | "updatedAt"
 > & {
   id: number;
   releaseDate: string;

@@ -1,4 +1,4 @@
-import * as z from 'zod';
+import * as z from "zod";
 
 export const responseSchema = z.object({
   input: z.string().min(2).max(1000),

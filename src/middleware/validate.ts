@@ -1,8 +1,8 @@
-import type { Request, Response, NextFunction } from 'express';
-import * as z from 'zod';
+import type { Request, Response, NextFunction } from "express";
+import * as z from "zod";
 
 export const validateReqBody = <T extends z.ZodRawShape>(
-  schema: z.ZodObject<T>
+  schema: z.ZodObject<T>,
 ) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -12,7 +12,7 @@ export const validateReqBody = <T extends z.ZodRawShape>(
       if (error instanceof z.ZodError) {
         return res
           .status(400)
-          .json({ message: 'Invalid request body', errors: error.issues });
+          .json({ message: "Invalid request body", errors: error.issues });
       }
       next(error);
     }
@@ -20,7 +20,7 @@ export const validateReqBody = <T extends z.ZodRawShape>(
 };
 
 export const validateReqQuery = <T extends z.ZodRawShape>(
-  schema: z.ZodObject<T>
+  schema: z.ZodObject<T>,
 ) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -30,7 +30,7 @@ export const validateReqQuery = <T extends z.ZodRawShape>(
       if (error instanceof z.ZodError) {
         return res
           .status(400)
-          .json({ message: 'Invalid request query', errors: error.issues });
+          .json({ message: "Invalid request query", errors: error.issues });
       }
       next(error);
     }
@@ -38,7 +38,7 @@ export const validateReqQuery = <T extends z.ZodRawShape>(
 };
 
 export const validateReqParams = <T extends z.ZodRawShape>(
-  schema: z.ZodObject<T>
+  schema: z.ZodObject<T>,
 ) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -48,7 +48,7 @@ export const validateReqParams = <T extends z.ZodRawShape>(
       if (error instanceof z.ZodError) {
         return res
           .status(400)
-          .json({ message: 'Invalid request params', errors: error.issues });
+          .json({ message: "Invalid request params", errors: error.issues });
       }
       next(error);
     }

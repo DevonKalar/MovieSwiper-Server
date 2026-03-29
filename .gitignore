@@ -1,0 +1,18 @@
+# Environment variables
+.env
+
+# Test environment variables
+.env.test
+
+# Node.js
+node_modules
+
+# Prisma
+prisma/migrations
+prisma/generated
+
+# VSCode
+.vscode
+
+# Cursor
+.cursor
