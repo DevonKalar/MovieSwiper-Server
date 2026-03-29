@@ -397,30 +397,30 @@ var retrieveSchema = z3.object({
   id: z3.string().min(1)
 });
 
+// src/lib/openaiAxios.ts
+import axios from "axios";
+var openaiAxios = axios.create({
+  baseURL: "https://api.openai.com/v1/",
+  headers: {
+    Authorization: `Bearer ${config.apiKeys.openai}`,
+    "Content-Type": "application/json"
+  }
+});
+
 // src/clients/openai.ts
-import OpenAI from "openai";
-var OpenAIClient = class {
-  client;
-  constructor() {
-    this.client = new OpenAI({
-      apiKey: config.apiKeys.openai
-    });
-  }
-  async createResponse(input, instructions, previous_response_id) {
-    const response = await this.client.responses.create({
-      model: "gpt-4o",
-      input,
-      ...instructions && { instructions },
-      ...previous_response_id && { previous_response_id }
-    });
-    return response;
-  }
-  async retrieveResponse(responseId) {
-    const response = await this.client.responses.retrieve(responseId);
-    return response;
-  }
-};
-var openaiClient = new OpenAIClient();
+async function createResponse(input, instructions, previous_response_id) {
+  const { data } = await openaiAxios.post("responses", {
+    model: "gpt-4o",
+    input,
+    ...instructions && { instructions },
+    ...previous_response_id && { previous_response_id }
+  });
+  return data;
+}
+async function retrieveResponse(responseId) {
+  const { data } = await openaiAxios.get(`responses/${responseId}`);
+  return data;
+}
 
 // src/routes/openai.ts
 var openaiRouter = Router2();
@@ -429,11 +429,7 @@ openaiRouter.post(
   validateReqBody(responseSchema),
   async (req, res) => {
     const { input, instructions, previous_response_id } = req.validatedBody;
-    const response = await openaiClient.createResponse(
-      input,
-      instructions,
-      previous_response_id
-    );
+    const response = await createResponse(input, instructions, previous_response_id);
     res.json(response);
   }
 );
@@ -442,7 +438,7 @@ openaiRouter.get(
   validateReqParams(retrieveSchema),
   async (req, res) => {
     const { id } = req.validatedParams;
-    const response = await openaiClient.retrieveResponse(id);
+    const response = await retrieveResponse(id);
     res.json(response);
   }
 );
@@ -465,126 +461,59 @@ var movieQuerySchema = z4.object({
   with_genres: z4.string().optional()
 });
 
+// src/lib/tmdbAxios.ts
+import axios2 from "axios";
+var tmdbAxios = axios2.create({
+  baseURL: "https://api.themoviedb.org/3/",
+  headers: {
+    Authorization: `Bearer ${process.env.TMDB_BEARER_TOKEN ?? ""}`,
+    Accept: "application/json"
+  }
+});
+
 // src/clients/tmdb.ts
-var TMDBClient = class {
-  baseURL;
-  token;
-  constructor() {
-    this.baseURL = "https://api.themoviedb.org/3/";
-    this.token = process.env.TMDB_BEARER_TOKEN || "";
+async function fetchMovieDetails(movieId) {
+  try {
+    const { data } = await tmdbAxios.get(`movie/${movieId}`, {
+      params: { language: "en-US" }
+    });
+    return data;
+  } catch (error) {
+    console.error("Fetch movie details failed:", error);
+    return null;
   }
-  async fetchMovieDetails(movieId) {
-    const url = `${this.baseURL}movie/${movieId}?language=en-US`;
-    try {
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-          "Content-Type": "application/json;charset=utf-8"
-        }
-      });
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Fetch movie details failed:", error);
-      return null;
-    }
+}
+async function fetchMoviesByQuery(params) {
+  try {
+    const { data } = await tmdbAxios.get("discover/movie", { params });
+    return data;
+  } catch (error) {
+    console.error("Fetch movies failed:", error);
+    return [];
   }
-  async fetchMoviesByQuery(params) {
-    const queryParams = {
-      include_adult: params.include_adult,
-      include_video: params.include_video,
-      language: params.language,
-      page: params.page,
-      sort_by: params.sort_by
-    };
-    if (params.with_genres) {
-      queryParams.with_genres = params.with_genres;
-    }
-    const queryString = new URLSearchParams(queryParams).toString();
-    const url = `${this.baseURL}discover/movie?${queryString}`;
-    try {
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization: `Bearer ${this.token}`
-        }
-      });
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Fetch movies failed:", error);
-      return [];
-    }
+}
+async function fetchPopularMovies(page = 1) {
+  try {
+    const { data } = await tmdbAxios.get("movie/popular", {
+      params: { language: "en-US", page }
+    });
+    return data;
+  } catch (error) {
+    console.error("Fetch popular movies failed:", error);
+    return [];
   }
-  async fetchPopularMovies(page = 1) {
-    const url = `${this.baseURL}movie/popular?language=en-US&page=${page}`;
-    try {
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization: `Bearer ${this.token}`
-        }
-      });
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Fetch popular movies failed:", error);
-      return [];
-    }
+}
+async function fetchGenres() {
+  try {
+    const { data } = await tmdbAxios.get("genre/movie/list", {
+      params: { language: "en-US" }
+    });
+    return data.genres;
+  } catch (error) {
+    console.error("Fetch genres failed:", error);
+    return [];
   }
-  async fetchMoviesByGenre(genreId, page = 1) {
-    const url = `${this.baseURL}discover/movie?with_genres=${genreId}&language=en-US&page=${page}`;
-    try {
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization: `Bearer ${this.token}`
-        }
-      });
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Fetch movies by genre failed:", error);
-      return [];
-    }
-  }
-  async fetchGenres() {
-    const url = `${this.baseURL}genre/movie/list?language=en-US`;
-    try {
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization: `Bearer ${this.token}`
-        }
-      });
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const data = await response.json();
-      return data.genres;
-    } catch (error) {
-      console.error("Fetch genres failed:", error);
-      return [];
-    }
-  }
-};
-var tmdbClient = new TMDBClient();
+}
 
 // src/routes/tmdb.ts
 var tmdbRouter = Router3();
@@ -593,7 +522,7 @@ tmdbRouter.get(
   validateReqParams(movieDetailsSchema),
   async (req, res) => {
     const { id } = req.validatedParams;
-    const movieDetails = await tmdbClient.fetchMovieDetails(parseInt(id, 10));
+    const movieDetails = await fetchMovieDetails(parseInt(id, 10));
     if (!movieDetails) {
       throw new NotFoundError("Movie not found");
     }
@@ -605,14 +534,14 @@ tmdbRouter.get(
   validateReqQuery(movieQuerySchema),
   async (req, res) => {
     const query = req.validatedQuery;
-    const movies = await tmdbClient.fetchMoviesByQuery(query);
+    const movies = await fetchMoviesByQuery(query);
     res.json(movies);
   }
 );
 tmdbRouter.get(
   "/genres",
   async (req, res) => {
-    const genres = await tmdbClient.fetchGenres();
+    const genres = await fetchGenres();
     res.json(genres);
   }
 );
@@ -784,7 +713,7 @@ function apiMoviesToMovies(movies) {
 
 // src/services/recommendations.ts
 async function fetchGuestRecommendations(page) {
-  const tmdbFetch = await tmdbClient.fetchPopularMovies(page);
+  const tmdbFetch = await fetchPopularMovies(page);
   const movieResults = apiMoviesToMovies(tmdbFetch.results);
   return {
     results: movieResults,
@@ -802,7 +731,7 @@ async function fetchUserRecommendations(userId, startPage) {
   let currentPage = startPage;
   const maxPages = startPage + 10;
   while (tmdbResults.length < limit && currentPage < maxPages) {
-    const movies = await tmdbClient.fetchPopularMovies(currentPage);
+    const movies = await fetchPopularMovies(currentPage);
     if (!movies?.results) break;
     console.log(
       `Fetched page ${currentPage} with ${movies.results.length} movies`

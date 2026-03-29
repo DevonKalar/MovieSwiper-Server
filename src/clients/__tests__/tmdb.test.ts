@@ -8,6 +8,7 @@ import {
   fetchMoviesByGenre,
   fetchGenres,
 } from "@clients/tmdb.js";
+import { expect, describe, it } from "vitest";
 
 const TMDB_BASE = "https://api.themoviedb.org/3";
 

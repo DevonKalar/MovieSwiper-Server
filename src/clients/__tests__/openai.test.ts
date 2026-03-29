@@ -2,6 +2,7 @@ import { http, HttpResponse } from "msw";
 import { server } from "@tests/mocks/server.js";
 import { setupMSW } from "@tests/utils/setupMSW.js";
 import { createResponse, retrieveResponse } from "@clients/openai.js";
+import { expect, describe, it } from "vitest";
 
 const OPENAI_BASE = "https://api.openai.com/v1";
 
