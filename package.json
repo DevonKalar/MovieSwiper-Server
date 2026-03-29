@@ -13,7 +13,6 @@
     "vitest:coverage": "vitest run --coverage",
     "prisma studio": "prisma studio --config ./prisma.config.ts",
     "dev": "tsup --watch --onSuccess \"node dist/server.js\"",
-    "postinstall": "prisma generate --config ./prisma.config.ts",
     "start": "node dist/server.js"
   },
   "keywords": [],
