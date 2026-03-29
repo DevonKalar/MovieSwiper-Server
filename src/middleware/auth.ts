@@ -2,6 +2,7 @@ import type { JwtPayload } from "jsonwebtoken";
 import type { Request, Response, NextFunction } from "express";
 import rateLimit from "express-rate-limit";
 import jwt from "jsonwebtoken";
+import { UnauthorizedError } from "@middleware/errorHandler.js";
 
 export const authRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -19,7 +20,7 @@ export const requireUser = (
     req.headers.authorization?.split(" ")[1] || req.cookies?.auth_token;
 
   if (!token) {
-    return res.status(401).json({ message: "Unauthorized - No token" });
+    return next(new UnauthorizedError("No token"));
   }
 
   try {
@@ -29,8 +30,8 @@ export const requireUser = (
     ) as JwtPayload;
     req.user = decoded;
     next();
-  } catch (err) {
-    return res.status(401).json({ message: "Unauthorized - Invalid token" });
+  } catch {
+    next(new UnauthorizedError("Invalid token"));
   }
 };
 
@@ -54,7 +55,7 @@ export const optionalUser = (
     req.user = decoded;
     next();
   } catch (err) {
-    console.error("OptionalUser - Token invalid");
+    console.error("OptionalUser - Token invalid", err);
     next();
   }
 };

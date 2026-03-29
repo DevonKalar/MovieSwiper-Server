@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma.js";
 import type { Movie } from "@/types/movie.js";
+import { NotFoundError } from "@middleware/errorHandler.js";
 
 export async function getWatchlist(userId: number) {
   return await prisma.watchlist.findMany({
@@ -104,7 +105,7 @@ export async function removeMovieFromWatchlist(
   });
 
   if (!watchlistEntry) {
-    throw new Error("Watchlist item not found");
+    throw new NotFoundError("Watchlist item not found");
   }
 
   await prisma.watchlist.delete({

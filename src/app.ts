@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import { config } from "./config/env.js";
 import appRouter from "./routes/index.js";
+import { errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
 
@@ -48,5 +49,8 @@ app.get("/health", (req, res) => {
 
 // API routes
 app.use("/api", appRouter);
+
+// Error handler — must be registered after all routes
+app.use(errorHandler);
 
 export default app;

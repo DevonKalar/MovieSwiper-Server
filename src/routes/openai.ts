@@ -13,18 +13,12 @@ openaiRouter.post(
   async (req: Request, res: Response) => {
     const { input, instructions, previous_response_id } =
       req.validatedBody as ResponseInput;
-
-    try {
-      const response = await openaiClient.createResponse(
-        input,
-        instructions,
-        previous_response_id,
-      );
-      res.json(response);
-    } catch (error) {
-      console.error("Error creating OpenAI response:", error);
-      res.status(500).json({ error: "Failed to create response" });
-    }
+    const response = await openaiClient.createResponse(
+      input,
+      instructions,
+      previous_response_id,
+    );
+    res.json(response);
   },
 );
 
@@ -33,13 +27,8 @@ openaiRouter.get(
   validateReqParams(retrieveSchema),
   async (req: Request, res: Response) => {
     const { id } = req.validatedParams as RetrieveParams;
-    try {
-      const response = await openaiClient.retrieveResponse(id);
-      res.json(response);
-    } catch (error) {
-      console.error("Error retrieving OpenAI response:", error);
-      res.status(500).json({ error: "Failed to retrieve response" });
-    }
+    const response = await openaiClient.retrieveResponse(id);
+    res.json(response);
   },
 );
 

@@ -9,7 +9,6 @@ import type {
   RegisterResponse,
   LogoutResponse,
   CheckAuthResponse,
-  AuthErrorResponse,
 } from "@/types/auth.js";
 import {
   authenticateUser,
@@ -20,111 +19,86 @@ import {
   setAuthCookie,
   clearAuthCookie,
 } from "@/services/auth.js";
+import {
+  UnauthorizedError,
+  ConflictError,
+  NotFoundError,
+} from "@middleware/errorHandler.js";
 
 const authRouter = Router();
 
 authRouter.post(
   "/login",
   validateReqBody(loginSchema),
-  async (req: Request, res: Response<LoginResponse | AuthErrorResponse>) => {
+  async (req: Request, res: Response<LoginResponse>) => {
     const { email, password } = req.validatedBody as LoginInput;
-    try {
-      const user = await authenticateUser(email, password);
-      if (!user) {
-        return res.status(401).json({ message: "Invalid email or password" });
-      }
-
-      const token = signToken(user.id);
-      setAuthCookie(res, token);
-
-      return res.status(200).json({
-        message: "Login successful",
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        id: user.id,
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Internal server error" });
+    const user = await authenticateUser(email, password);
+    if (!user) {
+      throw new UnauthorizedError("Invalid email or password");
     }
+
+    const token = signToken(user.id);
+    setAuthCookie(res, token);
+
+    return res.status(200).json({
+      message: "Login successful",
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      id: user.id,
+    });
   },
 );
 
 authRouter.post(
   "/logout",
-  async (
-    req: Request,
-    res: Response<LogoutResponse | AuthErrorResponse>,
-  ) => {
-    try {
-      clearAuthCookie(res);
-      return res.json({ message: "Logged out successfully" });
-    } catch (error) {
-      console.error("Error during logout:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
+  async (req: Request, res: Response<LogoutResponse>) => {
+    clearAuthCookie(res);
+    return res.json({ message: "Logged out successfully" });
   },
 );
 
 authRouter.post(
   "/register",
   validateReqBody(registerSchema),
-  async (
-    req: Request,
-    res: Response<RegisterResponse | AuthErrorResponse>,
-  ) => {
+  async (req: Request, res: Response<RegisterResponse>) => {
     const { email, password, firstName, lastName } =
       req.validatedBody as RegisterInput;
-    try {
-      if (await userExists(email)) {
-        return res
-          .status(409)
-          .json({ message: "User with that email already exists" });
-      }
 
-      const user = await createUser(email, password, firstName, lastName);
-      const token = signToken(user.id);
-      setAuthCookie(res, token);
-
-      res.status(201).json({
-        message: "Registration successful",
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        id: user.id,
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Internal server error" });
+    if (await userExists(email)) {
+      throw new ConflictError("User with that email already exists");
     }
+
+    const user = await createUser(email, password, firstName, lastName);
+    const token = signToken(user.id);
+    setAuthCookie(res, token);
+
+    return res.status(201).json({
+      message: "Registration successful",
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      id: user.id,
+    });
   },
 );
 
 authRouter.get(
   "/check",
   requireUser,
-  async (
-    req: Request,
-    res: Response<CheckAuthResponse | AuthErrorResponse>,
-  ) => {
-    try {
-      const user = await findUserById(req.user!.id);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      return res.status(200).json({
-        message: "User is authenticated",
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        id: user.id,
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Internal server error" });
+  async (req: Request, res: Response<CheckAuthResponse>) => {
+    const user = await findUserById(req.user!.id);
+    if (!user) {
+      throw new NotFoundError("User not found");
     }
+
+    return res.status(200).json({
+      message: "User is authenticated",
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      id: user.id,
+    });
   },
 );
 
